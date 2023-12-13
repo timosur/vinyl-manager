@@ -1,14 +1,12 @@
-from fastapi import FastAPI, Depends,Security
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import FileResponse
 
 from app.api import api_router
 from app.core.config import settings
-from app.deps.users import azure_scheme
 
 def create_app():
     description = f"{settings.PROJECT_NAME} API"
@@ -16,14 +14,9 @@ def create_app():
     app = FastAPI(
         title=settings.PROJECT_NAME,
         openapi_url=f"{settings.API_PATH}/openapi.json",
-        docs_url="/docs/",
+        docs_url=f"{settings.API_PATH}/docs",
         description=description,
         redoc_url=None,
-        swagger_ui_oauth2_redirect_url='/oauth2-redirect',
-        swagger_ui_init_oauth={
-            'usePkceWithAuthorizationCodeGrant': True,
-            'clientId': settings.OPENAPI_CLIENT_ID,
-        },
     )
     setup_routers(app)
     setup_cors_middleware(app)
@@ -33,7 +26,8 @@ def create_app():
 
 
 def setup_routers(app: FastAPI) -> None:
-    app.include_router(api_router, prefix=settings.API_PATH, dependencies=[Security(azure_scheme, scopes=['user.access'])])
+    # Import all routers here
+    app.include_router(api_router, prefix=settings.API_PATH)
 
     # The following operation needs to be at the end of this function
     use_route_names_as_operation_ids(app)

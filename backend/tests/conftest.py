@@ -9,7 +9,6 @@ from starlette.testclient import TestClient
 
 from app.core.config import settings
 from app.db import Base
-from app.deps.users import get_user_manager
 from app.factory import create_app
 from app.models.item import Item
 from app.models.user import User
