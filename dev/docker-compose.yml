@@ -1,0 +1,104 @@
+version: '3'
+
+services:
+  vinyl-traefik:
+    image: traefik:v1.7.19
+    container_name: vinyl-traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8888:8888
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:cached
+      - ./traefik:/etc/traefik:cached
+    environment:
+      - 'TZ=Europe/Berlin'
+    networks:
+      - default
+      - internal
+
+  vinyl-backend:
+    container_name: vinyl-backend
+    build:
+      context: ../backend
+      dockerfile: docker/dev/Dockerfile
+    depends_on:
+      - vinyl-postgres
+    ports:
+      - 8000:8000
+    command: uvicorn main:app --host 0.0.0.0 --reload
+    environment:
+      - ENV=development
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_SERVER=${POSTGRES_SERVER}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - MSAL_CLIENT_CREDENTIAL=${MSAL_CLIENT_CREDENTIAL}
+    labels:
+      - 'traefik.backend=gateway'
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:vinyl.docker.local;PathPrefix:/api'
+      - 'traefik.port=8000'
+      - 'traefik.docker.network=internal'
+    volumes:
+       - ../backend:/app:delegated
+    dns:
+      - 8.8.8.8
+    networks:
+      - internal
+
+  vinyl-frontend:
+    container_name: vinyl-frontend
+    build:
+      context: ../frontend
+      dockerfile: docker/dev/Dockerfile
+    ports:
+      - 3000:3000
+    command: >
+      nodemon -w package.json --exec 'npm install && npm run dev'
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - APP_ENVIRONMENT=local
+      - API_URL=http://vinyl-backend/api
+    depends_on:
+      - vinyl-backend
+    labels:
+      - 'traefik.backend=frontend'
+      - 'traefik.enable=true'
+      - 'traefik.frontend.rule=Host:vinyl.docker.local'
+      - 'traefik.port=3000'
+      - 'traefik.docker.network=internal'
+    volumes:
+      - ../frontend/package.json:/usr/src/app/package.json:cached
+      - ../frontend/package-lock.json:/usr/src/app/package-lock.json:cached
+      - ../frontend/src:/usr/src/app/src:cached
+      - ../frontend/pages:/usr/src/app/pages:cached
+      - ../frontend/public:/usr/src/app/public:cached
+      - ../frontend/styles:/usr/src/app/styles:cached
+    working_dir: /usr/src/app
+    dns:
+      - 8.8.8.8
+    networks:
+      - internal
+
+  vinyl-postgres:
+    image: postgres:latest
+    container_name: vinyl-postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+
+networks:
+  internal:
+  default:
+    driver: bridge
