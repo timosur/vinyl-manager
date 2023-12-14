@@ -12,5 +12,8 @@ class Label(Base):
 
     name: Mapped[str] = Column(String)
 
+    release_id: Mapped[UUID] = Column(UUID, ForeignKey("release.id"))
+    release: Mapped["Release"] = relationship("Release", back_populates="labels")
+
     created_at: Mapped[DateTime] = Column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[DateTime] = Column(DateTime(timezone=True), onupdate=func.now())

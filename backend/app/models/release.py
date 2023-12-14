@@ -18,11 +18,8 @@ class Release(Base):
     name: Mapped[str] = Column(String)
     short: Mapped[str] = Column(String)
 
-    label: Mapped["Label"] = relationship()
-    label_id: Mapped[UUID] = Column(UUID, ForeignKey("label.id"))
-    artist: Mapped["Artist"] = relationship()
-    artist_id: Mapped[UUID] = Column(UUID, ForeignKey("artist.id"))
-
+    labels: Mapped[List[Label]] = relationship("Label", back_populates="release")
+    artists: Mapped[List[Artist]] = relationship("Artist", back_populates="release")
     tracks: Mapped[List[Track]] = relationship("Track", back_populates="release")
 
     created_at: Mapped[DateTime] = Column(DateTime(timezone=True), server_default=func.now())

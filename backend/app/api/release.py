@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, HTTPException
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select
 
@@ -15,8 +15,8 @@ router = APIRouter()
 async def list_releases(session: AsyncSession = Depends(get_async_session)):
     # Prepare the select statement
     stmt = select(Release).options(
-        joinedload(Release.label),
-        joinedload(Release.artist),
+        selectinload(Release.labels),
+        selectinload(Release.artists),
         selectinload(Release.tracks),
     )
 
@@ -64,3 +64,7 @@ async def import_deejay_de_csv(
     except Exception as e:
         logger.exception(e)
         return {"status": "ERROR", "message": str(e)}
+
+@router.post("/release/sync-discogs")
+async def sync_discogs(session: AsyncSession = Depends(get_async_session)):
+    

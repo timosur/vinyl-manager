@@ -19,45 +19,7 @@ async def import_deejay_de(session: AsyncSession, file: UploadFile):
     release_ids = []
     for item in csv_data:
         if all(key in item for key in ["Artist", "Title", "Label", "Label No"]):
-            # check if artist exists, if not create it
-            artist_stmt = await session.execute(
-                select(Artist).where(Artist.name == item["Artist"])
-            )
-            artist = artist_stmt.scalars().first()
-            if not artist:
-                result = await session.execute(
-                    insert(Artist).values(name=item["Artist"])
-                )
-
-                # Retrieve the primary key (ID) of the newly inserted artist
-                artist_id = result.inserted_primary_key[0]
-
-                logger.info(f"Created artist {item['Artist']} with ID {artist_id}")
-            else:
-                artist_id = artist.id
-
-                logger.info(f"Found artist {item['Artist']} with ID {artist_id}")
-
-            # check if label exists, if not create it
-            label_stmt = await session.execute(
-                select(Label).where(Label.name == item["Label"])
-            )
-            label = label_stmt.scalars().first()
-            if not label:
-                result = await session.execute(
-                    insert(Label).values(name=item["Label"])
-                )
-
-                # Retrieve the primary key (ID) of the newly inserted label
-                label_id = result.inserted_primary_key[0]
-
-                logger.info(f"Created label {item['Label']} with ID {label_id}")
-            else:
-                label_id = label.id
-
-                logger.info(f"Found label {item['Label']} with ID {label_id}")
-
-            # check if release exists, if not create it
+             # check if release exists, if not create it
             release_stmt = await session.execute(
                 select(Release).where(Release.name == item["Title"])
             )
@@ -66,9 +28,7 @@ async def import_deejay_de(session: AsyncSession, file: UploadFile):
                 result = await session.execute(
                     insert(Release).values(
                         name=item["Title"],
-                        short=item["Label No"],
-                        artist_id=artist_id,
-                        label_id=label_id,
+                        short=item["Label No"]
                     )
                 )
 
@@ -82,6 +42,39 @@ async def import_deejay_de(session: AsyncSession, file: UploadFile):
                 release_id = release.id
 
                 logger.info(f"Found release {item['Title']} with ID {release_id}")
+
+            # check if artist exists, if not create it
+            artist_stmt = await session.execute(
+                select(Artist).where(Artist.name == item["Artist"])
+            )
+            artist = artist_stmt.scalars().first()
+            if not artist:
+                result = await session.execute(
+                    insert(Artist).values(name=item["Artist"], release_id=release_id)
+                )
+
+                logger.info(f"Created artist {item['Artist']} with ID {result.inserted_primary_key[0]}")
+            else:
+                logger.info(f"Found artist {item['Artist']} with ID {artist.id}")
+
+            # check if label exists, if not create it
+            label_stmt = await session.execute(
+                select(Label).where(Label.name == item["Label"])
+            )
+            label = label_stmt.scalars().first()
+            if not label:
+                result = await session.execute(
+                    insert(Label).values(name=item["Label"], release_id=release_id)
+                )
+
+                # Retrieve the primary key (ID) of the newly inserted label
+                label_id = result.inserted_primary_key[0]
+
+                logger.info(f"Created label {item['Label']} with ID {label_id}")
+            else:
+                label_id = label.id
+
+                logger.info(f"Found label {item['Label']} with ID {label_id}")
 
             # grab track for the release via discogs
             tracklist = discogs_search_tracklist(f"{item['Label No']} {item['Title']}")
