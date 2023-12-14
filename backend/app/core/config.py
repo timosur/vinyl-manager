@@ -10,6 +10,8 @@ class Settings(BaseSettings):
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 7 * 24 * 60  # 7 days
 
+    DISCOGS_USER_TOKEN: str
+
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ['http://localhost:8000','http://localhost:3000','https://vinyl.docker.local']
 
     # The following variables need to be defined in environment

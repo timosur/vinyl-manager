@@ -24,7 +24,6 @@ def create_app():
 
     return app
 
-
 def setup_routers(app: FastAPI) -> None:
     # Import all routers here
     app.include_router(api_router, prefix=settings.API_PATH)
@@ -57,7 +56,6 @@ def setup_cors_middleware(app):
             expose_headers=["Content-Range", "Range"],
             allow_headers=['*'],
         )
-
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
     """

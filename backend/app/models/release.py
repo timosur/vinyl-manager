@@ -1,3 +1,4 @@
+from typing import List
 import uuid
 
 from sqlalchemy import Column, UUID, String, DateTime, ForeignKey
@@ -7,11 +8,12 @@ from sqlalchemy.orm import Mapped, relationship
 from app.db import Base
 from app.models.label import Label
 from app.models.artist import Artist
+from app.models.track import Track
 
 class Release(Base):
     __tablename__ = 'release'
 
-    id: Mapped[UUID] = Column(UUID, primary_key=True, index=True, default=uuid.uuid4())
+    id: Mapped[UUID] = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
 
     name: Mapped[str] = Column(String)
     short: Mapped[str] = Column(String)
@@ -20,6 +22,8 @@ class Release(Base):
     label_id: Mapped[UUID] = Column(UUID, ForeignKey("label.id"))
     artist: Mapped["Artist"] = relationship()
     artist_id: Mapped[UUID] = Column(UUID, ForeignKey("artist.id"))
+
+    tracks: Mapped[List[Track]] = relationship("Track", back_populates="release")
 
     created_at: Mapped[DateTime] = Column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[DateTime] = Column(DateTime(timezone=True), onupdate=func.now())

@@ -8,7 +8,7 @@ from app.db import Base
 class Label(Base):
     __tablename__ = 'label'
 
-    id: Mapped[UUID] = Column(UUID, primary_key=True, index=True, default=uuid.uuid4())
+    id: Mapped[UUID] = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
 
     name: Mapped[str] = Column(String)
 
