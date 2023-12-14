@@ -7,6 +7,7 @@ from app.deps.db import get_async_session
 from app.models import Release
 from app.core.logger import logger
 from app.service.release.csv_import import import_deejay_de
+from app.service.release.sync_discogs import sync_discogs
 
 router = APIRouter()
 
@@ -57,7 +58,7 @@ async def import_deejay_de_csv(
         raise HTTPException(status_code=422, detail="Invalid file format")
 
     try:
-        release_ids = import_deejay_de(session, file)
+        release_ids = await import_deejay_de(session, file)
 
         return {"status": "OK", "created_releases": release_ids}
 
@@ -65,6 +66,19 @@ async def import_deejay_de_csv(
         logger.exception(e)
         return {"status": "ERROR", "message": str(e)}
 
+
 @router.post("/release/sync-discogs")
-async def sync_discogs(session: AsyncSession = Depends(get_async_session)):
+async def sync_discogs_collection(
+    session: AsyncSession = Depends(get_async_session), username: str = ""
+):
+    if not username:
+        raise HTTPException(status_code=422, detail="Invalid username")
+
+    try:
+        await sync_discogs(session, username)
+
+        return {"status": "OK"}
     
+    except Exception as e:
+        logger.exception(e)
+        return {"status": "ERROR", "message": str(e)}

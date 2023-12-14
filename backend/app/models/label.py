@@ -1,8 +1,8 @@
 import uuid
 
-from sqlalchemy import Column, UUID, String, DateTime
+from sqlalchemy import Column, UUID, ForeignKey, String, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from app.db import Base
 
 class Label(Base):

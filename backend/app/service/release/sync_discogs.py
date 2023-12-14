@@ -11,38 +11,6 @@ async def sync_discogs(session: AsyncSession, username: str):
   for item in collection:
     # Check if the required keys are present in the item
     if all(key in item for key in ["artists", "title", "labels"]):
-        # Process the artist
-        artist_name = item["artists"]
-        artist_stmt = await session.execute(
-            select(Artist).where(Artist.name == artist_name)
-        )
-        artist = artist_stmt.scalars().first()
-        if not artist:
-            result = await session.execute(
-                insert(Artist).values(name=artist_name)
-            )
-            artist_id = result.inserted_primary_key[0]
-            logger.info(f"Created artist {artist_name} with ID {artist_id}")
-        else:
-            artist_id = artist.id
-            logger.info(f"Found artist {artist_name} with ID {artist_id}")
-
-        # Process the label
-        label_name = item["labels"]
-        label_stmt = await session.execute(
-            select(Label).where(Label.name == label_name)
-        )
-        label = label_stmt.scalars().first()
-        if not label:
-            result = await session.execute(
-                insert(Label).values(name=label_name)
-            )
-            label_id = result.inserted_primary_key[0]
-            logger.info(f"Created label {label_name} with ID {label_id}")
-        else:
-            label_id = label.id
-            logger.info(f"Found label {label_name} with ID {label_id}")
-
         # Process the release
         release_title = item["title"]
         release_stmt = await session.execute(
@@ -53,9 +21,7 @@ async def sync_discogs(session: AsyncSession, username: str):
             result = await session.execute(
                 insert(Release).values(
                     name=release_title,
-                    short=item["year"],  # Assuming 'year' is equivalent to 'Label No'
-                    artist_id=artist_id,
-                    label_id=label_id,
+                    short=str(item["id"]),
                 )
             )
             release_id = result.inserted_primary_key[0]
@@ -63,6 +29,34 @@ async def sync_discogs(session: AsyncSession, username: str):
         else:
             release_id = release.id
             logger.info(f"Found release {release_title} with ID {release_id}")
+
+        # Process the artist
+        for artist_name in item["artists"]:
+            artist_stmt = await session.execute(
+                select(Artist).where(Artist.name == artist_name)
+            )
+            artist = artist_stmt.scalars().first()
+            if not artist:
+                result = await session.execute(
+                    insert(Artist).values(name=artist_name, release_id=release_id)
+                )
+                logger.info(f"Created artist {artist_name} with ID {result.inserted_primary_key[0]}")
+            else:
+                logger.info(f"Found artist {artist_name} with ID {artist.id}")
+
+        # Process the labels
+        for label_name in item["labels"]:
+            label_stmt = await session.execute(
+                select(Label).where(Label.name == label_name)
+            )
+            label = label_stmt.scalars().first()
+            if not label:
+                result = await session.execute(
+                    insert(Label).values(name=label_name, release_id=release_id)
+                )
+                logger.info(f"Created label {label_name} with ID {result.inserted_primary_key[0]}")
+            else:
+                logger.info(f"Found label {label_name} with ID {label.id}")
 
         # Process tracklist
         tracklist = item["tracklist"]

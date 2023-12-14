@@ -115,6 +115,7 @@ def discogs_get_user_collection(username: str) -> list:
 
       # Update the release with the new data
       releases.append({
+          'id': raw_release['id'],
           'artists': artists,
           'labels': labels,
           'year': year,
