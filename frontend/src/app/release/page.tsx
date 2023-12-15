@@ -1,6 +1,6 @@
 import { releaseService } from "@/service/release"
 
-export default async function Page() {
+export default async function Release() {
   const releases = await releaseService.get()
 
   return (
