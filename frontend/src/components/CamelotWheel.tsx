@@ -1,21 +1,47 @@
-import { camelotKeyColors } from "@/models/Camelot";
+import { majorKeySignatures, KeySignature, minorKeySignatures } from "@/models/Camelot";
 
-export const CamelotWheel = ({ keyName, onSelectKey, index, totalKeys, isSelected }: { keyName: string, onSelectKey: (key: string) => void, index: number, totalKeys: number, isSelected: boolean }) => {
-    const degree = 360 / totalKeys;
-    const rotation = degree * index;
+export const CamelotWheelSegment = ({ type, keySignature, onSelectKey, index, totalKeys, isSelected }: { type: string, keySignature: KeySignature, onSelectKey: (key: string) => void, index: number, totalKeys: number, isSelected: boolean }) => {
+  const degree = 360 / totalKeys;
+  const rotation = degree * index;
 
-    const segmentColor = isSelected ? camelotKeyColors[keyName] : '#ccc'; // Grau für nicht ausgewählte
-
-    return (
-      <div
-      className="key-wheel-segment"
+  return (
+    <div
+      className={`key-wheel-segment-${type} ${isSelected ? 'selected' : ''}`}
       style={{
-        backgroundColor: camelotKeyColors[keyName],
+        backgroundColor: keySignature.color,
         transform: `rotate(-${rotation}deg)`,
       }}
-      onClick={() => onSelectKey(keyName)}
+      onClick={() => onSelectKey(keySignature.name)}
     >
-      {keyName}
+      {keySignature.id}
     </div>
-    );
-  };
+  );
+};
+
+export const CamelotWheel = ({ selectedKey, onSelectKey }: { selectedKey: string, onSelectKey: (key: string) => void }) => {
+  return (<div className="key-wheel">
+    {majorKeySignatures.map((key: KeySignature, index: number) => (
+      <CamelotWheelSegment
+        type="outer"
+        key={key.name}
+        keySignature={key}
+        index={index}
+        totalKeys={majorKeySignatures.length}
+        onSelectKey={onSelectKey}
+        isSelected={key.name === selectedKey}
+      />
+    ))}
+
+    {minorKeySignatures.map((key: KeySignature, index: number) => (
+      <CamelotWheelSegment
+        type="inner"
+        key={key.name}
+        keySignature={key}
+        index={index}
+        totalKeys={minorKeySignatures.length}
+        onSelectKey={onSelectKey}
+        isSelected={key.name === selectedKey}
+      />
+    ))}
+  </div>)
+}

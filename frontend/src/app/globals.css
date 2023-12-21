@@ -23,19 +23,35 @@ input {
 
 .key-wheel {
   position: relative;
-  width: 200px; /* Adjust size as needed */
-  height: 300px; /* Adjust size as needed */
+  width: 210px;
+  height: 350px;
   border-radius: 50%;
   margin: 20px;
 }
 
-.key-wheel-segment {
+.key-wheel-segment-outer {
   position: absolute;
-  width: 40px; /* Adjust width as needed */
-  height: 150px; /* Adjust height as needed */
+  width: 89px;
+  height: 168px;
   left: 50%;
   transform-origin: bottom center;
   text-align: center;
   cursor: pointer;
-  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+  clip-path: polygon(0% 0, 100% 0, 82% 35%, 17% 35%);
+}
+
+.key-wheel-segment-inner {
+  position: absolute;
+  width: 57px;
+  height: 108px;
+  left: 57.5%;
+  top: 17%;
+  transform-origin: bottom center;
+  text-align: center;
+  cursor: pointer;
+  clip-path: polygon(0% 0%, 100% 0%, 66% 71%, 37% 71%);
+}
+
+.selected {
+  background-color: rgb(76, 76, 76) !important;
 }

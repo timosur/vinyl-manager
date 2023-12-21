@@ -6,7 +6,6 @@ import { StarRating } from '@/components/StarRating';
 import router from 'next/router';
 import { formatSecondsToMinutes } from '@/helper/time';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
-import { camelotKeys } from '@/models/Camelot';
 import { CamelotWheel } from '@/components/CamelotWheel';
 
 const EditRelease = ({ params }: { params: { id: string } }) => {
@@ -127,18 +126,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
             {/* Key Wheel Selector */}
             <label className="block">
               Key:
-              <div className="key-wheel">
-                {camelotKeys.map((key: string, index: number) => (
-                  <CamelotWheel
-                    key={key}
-                    keyName={key}
-                    index={index}
-                    totalKeys={camelotKeys.length}
-                    onSelectKey={() => onSelectKey(track.id, key)}
-                    isSelected={key === selectedKey}
-                  />
-                ))}
-              </div>
+              <CamelotWheel selectedKey={track.key} onSelectKey={(key: string) => onSelectKey(track.id, key)} />
             </label>
 
 
