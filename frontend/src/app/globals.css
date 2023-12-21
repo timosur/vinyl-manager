@@ -37,4 +37,5 @@ input {
   transform-origin: bottom center;
   text-align: center;
   cursor: pointer;
+  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
 }

@@ -12,6 +12,7 @@ import { CamelotWheel } from '@/components/CamelotWheel';
 const EditRelease = ({ params }: { params: { id: string } }) => {
   const [release, setRelease] = useState<Release>({} as Release);
   const [newTrackName, setNewTrackName] = useState('');
+  const [selectedKey, setSelectedKey] = useState('');
 
   useEffect(() => {
     const fetchRelease = async () => {
@@ -49,6 +50,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
   };
 
   const onSelectKey = (trackId: string, newKey: string) => {
+    setSelectedKey(newKey);
     setRelease({
       ...release,
       tracks: release.tracks.map((track) =>
@@ -133,6 +135,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                     index={index}
                     totalKeys={camelotKeys.length}
                     onSelectKey={() => onSelectKey(track.id, key)}
+                    isSelected={key === selectedKey}
                   />
                 ))}
               </div>

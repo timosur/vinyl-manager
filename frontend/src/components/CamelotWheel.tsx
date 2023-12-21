@@ -1,8 +1,10 @@
 import { camelotKeyColors } from "@/models/Camelot";
 
-export const CamelotWheel = ({ keyName, onSelectKey, index, totalKeys }: { keyName: string, onSelectKey: (key: string) => void, index: number, totalKeys: number }) => {
+export const CamelotWheel = ({ keyName, onSelectKey, index, totalKeys, isSelected }: { keyName: string, onSelectKey: (key: string) => void, index: number, totalKeys: number, isSelected: boolean }) => {
     const degree = 360 / totalKeys;
     const rotation = degree * index;
+
+    const segmentColor = isSelected ? camelotKeyColors[keyName] : '#ccc'; // Grau für nicht ausgewählte
 
     return (
       <div
