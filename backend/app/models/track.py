@@ -15,6 +15,9 @@ class Track(Base):
     side: Mapped[str] = Column(String)
     length: Mapped[int] = Column(Integer)
     rating: Mapped[int] = Column(Integer)
+    genre: Mapped[str] = Column(String)
+    bpm: Mapped[int] = Column(Integer)    
+    key: Mapped[str] = Column(String)
 
     release_id: Mapped[UUID] = Column(UUID, ForeignKey("release.id"))
     release: Mapped["Release"] = relationship("Release", back_populates="tracks")

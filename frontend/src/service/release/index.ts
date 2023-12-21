@@ -13,6 +13,31 @@ class ReleaseService {
     return null;
   }
 
+  public async getById(id: string): Promise<any | null> {
+    try {
+      const response = await doRequest(`/api/v1/release/${id}`, {
+        method: 'GET',
+      });
+      if (response.status === 200) return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  }
+
+  public async update(id: string, data: any): Promise<any | null> {
+    try {
+      const response = await doRequest(`/api/v1/release/${id}`, {
+        method: 'PUT',
+        data,
+      });
+      if (response.status === 200) return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  }
+
   public async discogsSync(): Promise<any | null> {
     try {
       const response = await doRequest('/api/v1/release/sync-discogs?username=timosur', {

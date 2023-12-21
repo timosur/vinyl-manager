@@ -4,16 +4,19 @@ export interface Release {
   created_at: string;
   updated_at: string | null;
   name: string;
+  notes: string;
   tracks: Track[];
   labels: Label[];
   artists: Artist[];
 }
 
-interface Track {
+export interface Track {
   rating: number | null;
   created_at: string;
   updated_at: string | null;
   name: string;
+  key: string;
+  bpm: number;
   length: number;
   id: string;
   side: string;

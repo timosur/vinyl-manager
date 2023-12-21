@@ -29,6 +29,43 @@ async def list_releases(session: AsyncSession = Depends(get_async_session)):
 
     return releases
 
+@router.get("/release/{id}")
+async def get_release(id: str, session: AsyncSession = Depends(get_async_session)):
+    # Prepare the select statement
+    stmt = select(Release).options(
+        selectinload(Release.labels),
+        selectinload(Release.artists),
+        selectinload(Release.tracks),
+    ).where(Release.id == id)
+
+    # Execute the query asynchronously
+    result = await session.execute(stmt)
+
+    # Fetch the results
+    release = result.scalars().first()
+
+    return release
+
+# update a release
+@router.put("/release/{id}")
+async def update_release(id: str, session: AsyncSession = Depends(get_async_session)):
+    # Prepare the select statement
+    stmt = select(Release).options(
+        selectinload(Release.labels),
+        selectinload(Release.artists),
+        selectinload(Release.tracks),
+    ).where(Release.id == id)
+
+    # Execute the query asynchronously
+    result = await session.execute(stmt)
+
+    # Fetch the results
+    release = result.scalars().first()
+
+    # TODO: update release
+
+    return release
+
 
 @router.delete("/release")
 async def delete_all_releases(session: AsyncSession = Depends(get_async_session)):
