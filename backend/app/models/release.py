@@ -1,7 +1,7 @@
 from typing import List
 import uuid
 
-from sqlalchemy import Column, UUID, String, DateTime, ForeignKey
+from sqlalchemy import Column, UUID, String, DateTime, LargeBinary
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, relationship
 
@@ -18,7 +18,8 @@ class Release(Base):
     name: Mapped[str] = Column(String)
     short: Mapped[str] = Column(String)
     notes: Mapped[str] = Column(String)
-
+    audio: Mapped[bytes] = Column(LargeBinary)  # Define the Blob Audio column
+    
     labels: Mapped[List[Label]] = relationship("Label", back_populates="release")
     artists: Mapped[List[Artist]] = relationship("Artist", back_populates="release")
     tracks: Mapped[List[Track]] = relationship("Track", back_populates="release")

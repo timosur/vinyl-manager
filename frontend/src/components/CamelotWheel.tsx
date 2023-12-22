@@ -11,7 +11,7 @@ export const CamelotWheelSegment = ({ type, keySignature, onSelectKey, index, to
         backgroundColor: keySignature.color,
         transform: `rotate(-${rotation}deg)`,
       }}
-      onClick={() => onSelectKey(keySignature.name)}
+      onClick={() => onSelectKey(keySignature.id)}
     >
       {keySignature.id}
     </div>
@@ -28,7 +28,7 @@ export const CamelotWheel = ({ selectedKey, onSelectKey }: { selectedKey: string
         index={index}
         totalKeys={majorKeySignatures.length}
         onSelectKey={onSelectKey}
-        isSelected={key.name === selectedKey}
+        isSelected={key.id === selectedKey}
       />
     ))}
 
@@ -40,8 +40,12 @@ export const CamelotWheel = ({ selectedKey, onSelectKey }: { selectedKey: string
         index={index}
         totalKeys={minorKeySignatures.length}
         onSelectKey={onSelectKey}
-        isSelected={key.name === selectedKey}
+        isSelected={key.id === selectedKey}
       />
     ))}
+
+    <div className="key-wheel-center">
+      {selectedKey}
+    </div>
   </div>)
 }

@@ -55,3 +55,15 @@ input {
 .selected {
   background-color: rgb(76, 76, 76) !important;
 }
+
+.key-wheel-center {
+  position: absolute;
+  width: 50px;
+  height: 30px;
+  text-align: center;
+  left: 71%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  font-size: x-large;
+}
