@@ -18,7 +18,6 @@ class Release(Base):
     name: Mapped[str] = Column(String)
     short: Mapped[str] = Column(String)
     notes: Mapped[str] = Column(String)
-    audio: Mapped[bytes] = Column(LargeBinary)  # Define the Blob Audio column
     
     labels: Mapped[List[Label]] = relationship("Label", back_populates="release")
     artists: Mapped[List[Artist]] = relationship("Artist", back_populates="release")

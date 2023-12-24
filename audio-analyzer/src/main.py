@@ -20,35 +20,50 @@ def analyze_audio_route():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    if file:
-        # Secure the filename before saving it directly
-        filename = secure_filename(file.filename)
+    if not file:
+        return jsonify({'error': 'No file'}), 400
         
-        # Ensure files directory exists
-        os.makedirs('files', exist_ok=True)
+    # Secure the filename before saving it directly
+    filename = secure_filename(file.filename)
+    
+    # Ensure files directory exists
+    os.makedirs('files', exist_ok=True)
 
-        # You can save the file to a directory (optional)
-        file_path = os.path.join('files', filename)
-        file.save(file_path)
-
-        # Analyze tempo
-        utempo = get_tempo(file_path)
-
-        # Analyze key
-        key_name, camelot_key, open_key_key = analyze_audio_file(file_path)
-
-        # Create response
-        response = {
-            'detected_tempo': float(utempo),
-            'detected_key': key_name,
-            'camelot_key_notation': camelot_key,
-            'open_key_notation': open_key_key
-        }
-        
-        # Cleanup
+    # You can save the file to a directory (optional)
+    file_path = os.path.join('files', filename)
+    file.save(file_path)
+    
+    print(f'File saved to {file_path}')
+    
+    # Convert webm to mp3, if webm
+    if file_path.endswith('.webm'):
+        # Remove .webm
+        mp3_file_path = file_path.replace('.webm', '.mp3')
+        # Convert to mp3
+        os.system(f'ffmpeg -i {file_path} {mp3_file_path}')
+        # Remove webm
         os.remove(file_path)
+        # Update file_path, replacing webm with mp3
+        file_path = mp3_file_path
 
-        return jsonify(response)
+    # Analyze tempo
+    utempo = get_tempo(file_path)
+
+    # Analyze key
+    key_name, camelot_key, open_key_key = analyze_audio_file(file_path)
+
+    # Create response
+    response = {
+        'detected_tempo': utempo,
+        'detected_key': key_name,
+        'camelot_key_notation': camelot_key,
+        'open_key_notation': open_key_key
+    }
+    
+    # Cleanup
+    os.remove(file_path)
+
+    return jsonify(response)
 
 # Set a maximum size for the uploaded file
 app.config['MAX_CONTENT_LENGTH'] = 150 * 1024 * 1024 # For example, 16MB max size

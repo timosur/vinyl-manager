@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, UUID
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, UUID, LargeBinary
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, relationship
 
@@ -18,6 +18,9 @@ class Track(Base):
     genre: Mapped[str] = Column(String)
     bpm: Mapped[int] = Column(Integer)    
     key: Mapped[str] = Column(String)
+    
+    # store audio as base64 encoded string
+    audio: Mapped[str] = Column(String)
 
     release_id: Mapped[UUID] = Column(UUID, ForeignKey("release.id"))
     release: Mapped["Release"] = relationship("Release", back_populates="tracks")

@@ -17,7 +17,7 @@ export interface Track {
   name: string;
   key: string;
   bpm: number;
-  audio: Blob;
+  audio: Blob | string;
   length: number;
   id: string;
   side: string;

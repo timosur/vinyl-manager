@@ -76,6 +76,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
   }));
 
   const handleSave = async () => {
+    console.log('release', release);
     await releaseService.update(params.id as string, release);
     router.push(`/release/${params.id}`);
   };
@@ -160,7 +161,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                           gap={0}
                           barColor={'lightblue'}
                       />
-                      <AudioPlayer blob={track.audio} />
+                      <AudioPlayer blob={track.audio as Blob} />
                   </>
               )}
             </label>

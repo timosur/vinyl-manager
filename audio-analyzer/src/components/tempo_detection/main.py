@@ -1,4 +1,3 @@
-import math
 import wave
 import numpy as np
 import os
@@ -64,5 +63,9 @@ def get_tempo(audio_file_path):
     # cleanup wav file
     if audio_file_path.lower().endswith(".mp3"):
         os.remove(audio_file_path)
-        
-    return int(bpm)
+    
+    # convert bpm to int if not None
+    if bpm:
+        bpm = int(bpm)
+    
+    return bpm

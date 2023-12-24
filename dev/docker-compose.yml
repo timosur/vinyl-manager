@@ -36,6 +36,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
       - DISCOGS_USER_TOKEN=${DISCOGS_USER_TOKEN}
+      - AUDIO_ANALYZER_URL=http://vinyl-audio-analyzer:5000
     labels:
       - 'traefik.backend=gateway'
       - 'traefik.enable=true'
@@ -46,6 +47,16 @@ services:
        - ../backend:/app:delegated
     dns:
       - 8.8.8.8
+    networks:
+      - internal
+
+  vinyl-audio-analyzer:
+    container_name: vinyl-audio-analyzer
+    build:
+      context: ../audio-analyzer
+      dockerfile: docker/dev/Dockerfile
+    ports:
+      - 8001:5000
     networks:
       - internal
 
