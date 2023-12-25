@@ -4,6 +4,7 @@ import { Release } from "@/models/Release"
 import { useEffect, useState } from "react";
 import { StarRating } from "@/components/StarRating";
 import { useRouter } from "next/navigation"
+import { PrintReleaseDetails } from "@/components/release/PrintReleaseDetails";
 
 interface SearchableTableProps {
   releases: Release[];
@@ -70,6 +71,17 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
 
   return (
     <div className="p-6">
+      {/* Button on the right */}
+      <div className="flex justify-end mb-4">
+        {/* New release by name */}
+        <input type="text" placeholder="Release Name" className="p-2 mr-2 bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors" />
+        <button className="p-2 bg-blue-500 rounded hover:bg-blue-600">
+          New Release
+        </button>
+        <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
+          Print Details
+        </button>
+      </div>
       <input
         type="text"
         placeholder="Search..."
@@ -127,6 +139,11 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="printable flex">
+        {filteredReleases.map(release => (
+          <PrintReleaseDetails release={release} />
+        ))}
       </div>
     </div>
   );

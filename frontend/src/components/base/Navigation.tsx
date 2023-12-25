@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 let navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, current: false },
+  { name: 'Home', href: '/', icon: HomeIcon, current: false },
   { name: 'Releases', href: '/release', icon: CircleStackIcon, current: false },
   { name: 'Import', href: '/import', icon: DocumentArrowUpIcon, current: false },
 ];

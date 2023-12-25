@@ -1,32 +1,18 @@
 import { releaseService } from "@/service/release"
 
+// Dashboard of the vinyl manager, explains what it does
 export default async function Page() {
-  const releases = await releaseService.get()
 
   return (
-    <table className="table-auto">
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>short</th>
-          <th>name</th>
-          <th>tracks</th>
-          <th>labels</th>
-          <th>artists</th>
-        </tr>
-      </thead>
-      <tbody>
-        {releases?.map((release: any) => (
-          <tr key={release.id}>
-            <td>{release.id}</td>
-            <td>{release.short}</td>
-            <td>{release.name}</td>
-            <td>{release.tracks.map((track: any) => track.name).join(", ")}</td>
-            <td>{release.labels.map((label: any) => label.name).join(", ")}</td>
-            <td>{release.artists.map((artist: any) => artist.name).join(", ")}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="container mx-auto p-4">
+      <h1 className="text-xl font-bold mb-4">Vinyl Collection</h1>
+      <div className="mb-4">
+        <p>This is a tool to manage your vinyl collection.</p>
+        <p>It can import CSV files from <a href="https://www.deejay.de/">Deejay.de</a> and sync with <a href="https://www.discogs.com/">Discogs</a>.</p>
+      </div>
+      <div>
+        <p>It is a work in progress, so don't expect too much.</p>
+      </div>
+    </div>
   )
 }

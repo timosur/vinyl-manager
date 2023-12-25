@@ -163,7 +163,180 @@ async def update_release(
 
     return release
 
+@router.delete("/release/{id}/track/{track_id}")
+async def delete_track(id: str, track_id: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        # Fetch the existing track
+        stmt = select(Track).where(Track.id == track_id, Track.release_id == id)
+        
+        result = await session.execute(stmt)
+        track = result.scalars().first()
+        
+        if not track:
+            raise HTTPException(status_code=404, detail="Track not found")
+        
+        # Delete track
+        await session.delete(track)
+        
+        # Commit changes
+        await session.commit()
 
+        return {"status": "OK"}
+
+    except Exception as e:
+        # Rollback the transaction
+        await session.rollback()
+        # Log the exception e for debugging
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.delete("/release/{id}/artist/{artist_id}")
+async def delete_artist(id: str, artist_id: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        # Fetch the existing artist
+        stmt = select(Artist).where(Artist.id == artist_id, Artist.release_id == id)
+        
+        result = await session.execute(stmt)
+        artist = result.scalars().first()
+        
+        if not artist:
+            raise HTTPException(status_code=404, detail="Artist not found")
+        
+        # Delete artist
+        await session.delete(artist)
+        
+        # Commit changes
+        await session.commit()
+
+        return {"status": "OK"}
+
+    except Exception as e:
+        # Rollback the transaction
+        await session.rollback()
+        # Log the exception e for debugging
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.delete("/release/{id}/label/{label_id}")
+async def delete_label(id: str, label_id: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        # Fetch the existing label
+        stmt = select(Label).where(Label.id == label_id, Label.release_id == id)
+        
+        result = await session.execute(stmt)
+        label = result.scalars().first()
+        
+        if not label:
+            raise HTTPException(status_code=404, detail="Label not found")
+        
+        # Delete label
+        await session.delete(label)
+        
+        # Commit changes
+        await session.commit()
+
+        return {"status": "OK"}
+
+    except Exception as e:
+        # Rollback the transaction
+        await session.rollback()
+        # Log the exception e for debugging
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.post("/release/{id}/track/empty")
+async def add_new_empty_track(id: str, name: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        # Fetch the existing release with simplified relationship loading
+        stmt = select(Release).where(Release.id == id)
+        result = await session.execute(stmt)
+        release = result.scalars().first()
+
+        if not release:
+            raise HTTPException(status_code=404, detail="Release not found")
+
+        # Add new track
+        new_track = Track()
+        new_track.name = name
+        new_track.release_id = id
+        
+        session.add(new_track)
+
+        # Commit changes
+        await session.commit()
+        
+        # Return the new track
+        return new_track
+
+    except Exception as e:
+        # Rollback the transaction
+        await session.rollback()
+        # Log the exception e for debugging
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.post("/release/{id}/artist/empty")
+async def add_new_empty_artist(id: str, name: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        # Fetch the existing release with simplified relationship loading
+        stmt = select(Release).where(Release.id == id)
+        result = await session.execute(stmt)
+        release = result.scalars().first()
+
+        if not release:
+            raise HTTPException(status_code=404, detail="Release not found")
+
+        # Add new artist
+        new_artist = Artist()
+        new_artist.name = name
+        new_artist.release_id = id
+        
+        session.add(new_artist)
+
+        # Commit changes
+        await session.commit()
+        
+        # Return the new artist
+        return new_artist
+
+    except Exception as e:
+        # Rollback the transaction
+        await session.rollback()
+        # Log the exception e for debugging
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.post("/release/{id}/label/empty")
+async def add_new_empty_label(id: str, name: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        # Fetch the existing release with simplified relationship loading
+        stmt = select(Release).where(Release.id == id)
+        result = await session.execute(stmt)
+        release = result.scalars().first()
+
+        if not release:
+            raise HTTPException(status_code=404, detail="Release not found")
+
+        # Add new label
+        new_label = Label()
+        new_label.name = name
+        new_label.release_id = id
+        
+        session.add(new_label)
+
+        # Commit changes
+        await session.commit()
+        
+        # Return the new label
+        return new_label
+
+    except Exception as e:
+        # Rollback the transaction
+        await session.rollback()
+        # Log the exception e for debugging
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
 @router.delete("/release")
 async def delete_all_releases(session: AsyncSession = Depends(get_async_session)):
     # Prepare the select statement

@@ -20,8 +20,8 @@ export const majorKeySignatures: MajorKeySignatures = [
     { id: '5B', name: 'Eb', color: 'rgb(255, 144, 0)', rotate: 75 },    // Orange
     { id: '4B', name: 'Ab', color: 'rgb(255, 92, 0)', rotate: 60 },     // Dark Orange
     { id: '3B', name: 'Db', color: 'rgb(255, 41, 0)', rotate: 45 },     // Red-Orange
-    { id: '2B', name: 'F#', color: 'rgb(255, 0, 0)', rotate: 30 },      // Red
-    { id: '1B', name: 'B', color: 'rgb(199, 32, 245)', rotate: 15 },    // Purple
+    { id: '2B', name: 'F#', color: 'rgb(255, 20, 0)', rotate: 30 },      // Red
+    { id: '1B', name: 'B', color: 'rgb(255, 0, 0)', rotate: 15 },    // Purple
 ];
 
 export const minorKeySignatures: MinorKeySignatures = [

@@ -3,11 +3,11 @@ import { releaseService } from "@/service/release";
 import React, { useState } from "react";
 
 export default function Page() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
 
   // Handle CSV file change
-  function handleFileChange(event) {
-    setFile(event.target.files[0]);
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setFile(event.target.files && event.target.files[0]);
   }
 
   // Handle CSV file upload
