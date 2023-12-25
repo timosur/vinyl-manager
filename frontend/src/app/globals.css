@@ -23,16 +23,16 @@ input {
 
 .key-wheel {
   position: relative;
-  width: 210px;
-  height: 350px;
+  width: 147px; /* 70% of 210px */
+  height: 245px; /* 70% of 350px */
   border-radius: 50%;
   margin: 20px;
 }
 
 .key-wheel-segment-outer {
   position: absolute;
-  width: 89px;
-  height: 168px;
+  width: 62.3px; /* 70% of 89px */
+  height: 117.6px; /* 70% of 168px */
   left: 50%;
   transform-origin: bottom center;
   text-align: center;
@@ -42,10 +42,10 @@ input {
 
 .key-wheel-segment-inner {
   position: absolute;
-  width: 57px;
-  height: 108px;
-  left: 57.5%;
-  top: 17%;
+  width: 39.9px; /* 70% of 57px */
+  height: 75.6px; /* 70% of 108px */
+  left: 57.5%; /* Adjust as needed */
+  top: 17%; /* Adjust as needed */
   transform-origin: bottom center;
   text-align: center;
   clip-path: polygon(0% 0%, 100% 0%, 66% 71%, 37% 71%);
@@ -58,11 +58,33 @@ input {
 
 .key-wheel-center {
   position: absolute;
-  width: 50px;
-  height: 30px;
+  width: 35px; /* 70% of 50px */
+  height: 21px; /* 70% of 30px */
   text-align: center;
-  left: 71%;
-  top: 47%;
+  left: 71%; /* Adjust as needed */
+  top: 47%; /* Adjust as needed */
   transform: translate(-50%, -50%);
-  font-size: x-large;
+  font-size: large; /* Adjust if necessary */
+}
+
+.printable {
+  visibility: hidden;
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable {
+    display: block;
+  }
+  .printable, .printable * {
+    visibility: visible;
+  }
+  .printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
 }

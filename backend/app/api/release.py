@@ -62,6 +62,7 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
 async def update_release(
     id: str,
     release_update: ReleaseUpdate,
+    analysis: bool = False,
     session: AsyncSession = Depends(get_async_session),
 ):
     # Fetch the existing release
@@ -141,7 +142,7 @@ async def update_release(
                         setattr(track, var, value)
                         
                 # Analyze track if audio is present
-                if hasattr(track, 'audio') and track.audio:
+                if hasattr(track, 'audio') and track.audio and analysis:
                     analysis_result = analyze_track_audio(track.audio)
                     track.bpm = analysis_result['detected_tempo']
                     track.key = analysis_result['camelot_key_notation']

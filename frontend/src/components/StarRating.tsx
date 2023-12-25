@@ -1,11 +1,13 @@
 import { useState } from "react";
 
-export const StarRating: React.FC<{ trackId: string; initialRating: number, onRating: (trackId: string, rating: number) => void }> = ({ trackId, initialRating, onRating }) => {
+export const StarRating: React.FC<{ initialRating: number, onRating?: (rating: number) => void }> = ({ initialRating, onRating }) => {
     const [rating, setRating] = useState(initialRating || 0);
   
     const handleRating = (rate: number) => {
       setRating(rate);
-      onRating(trackId, rate);
+      if (onRating) {
+        onRating(rate);
+      }
     };
   
     return (

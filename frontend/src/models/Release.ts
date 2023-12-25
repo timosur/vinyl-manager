@@ -1,4 +1,5 @@
 export interface Release {
+  [key: string]: any;
   id: string;
   short: string;
   created_at: string;
@@ -12,11 +13,12 @@ export interface Release {
 
 export interface Track {
   rating: number | null;
-  created_at: string;
-  updated_at: string | null;
+  created_at?: string;
+  updated_at?: string | null;
   name: string;
   key: string;
   bpm: number;
+  genre: string;
   audio: Blob | string;
   length: number;
   id: string;
