@@ -4,6 +4,7 @@ from sqlalchemy import Column, UUID, ForeignKey, String, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, relationship
 from app.db import Base
+from app.models.label_release_association import LabelReleaseAssociation
 
 class Label(Base):
     __tablename__ = 'label'
@@ -12,8 +13,7 @@ class Label(Base):
 
     name: Mapped[str] = Column(String)
 
-    release_id: Mapped[UUID] = Column(UUID, ForeignKey("release.id"))
-    release: Mapped["Release"] = relationship("Release", back_populates="labels")
+    releases = relationship("LabelReleaseAssociation", back_populates="label")
 
     created_at: Mapped[DateTime] = Column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[DateTime] = Column(DateTime(timezone=True), onupdate=func.now())

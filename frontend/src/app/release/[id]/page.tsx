@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { releaseService } from '@/service/release';
-import { Release, Track } from '@/models/Release';
+import { Release } from '@/models/Release';
 import { StarRating } from '@/components/StarRating';
 import { formatMinutesToSeconds, formatSecondsToMinutes } from '@/helper/time';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
@@ -255,7 +255,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                     <>
                       <AudioVisualizer
                         blob={track.audio}
-                        width={500}
+                        width={300}
                         height={75}
                         barWidth={1}
                         gap={0}

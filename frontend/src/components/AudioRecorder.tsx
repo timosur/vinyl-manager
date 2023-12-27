@@ -8,6 +8,10 @@ export const AudioRecorder = ({ onRecordingComplete }: { onRecordingComplete: (b
         <_AudioRecorder
             onRecordingComplete={onRecordingComplete}
             recorderControls={recorder}
+            audioTrackConstraints={{
+                noiseSuppression: false,
+                echoCancellation: false,
+              }} 
         />
 
         {recorder.mediaRecorder && (

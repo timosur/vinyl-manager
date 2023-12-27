@@ -49,7 +49,6 @@ RUN git clone https://github.com/CPJKU/madmom.git \
 
 # Copy the current directory contents into the container at /usr/src/app
 COPY ./src .
-COPY ./files files
 
 # Run the Python application on container startup
 CMD ["python3", "./main.py"]

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, HTTPException
-from sqlalchemy.orm import selectinload
+from pydantic import UUID4
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select
 
@@ -13,6 +14,8 @@ from app.models.artist import Artist
 from app.models.label import Label
 from app.models.track import Track
 from app.service.analyze import analyze_track_audio
+from app.models.artist_release_association import ArtistReleaseAssociation
+from app.models.label_release_association import LabelReleaseAssociation
 
 router = APIRouter()
 
@@ -21,8 +24,8 @@ router = APIRouter()
 async def list_releases(session: AsyncSession = Depends(get_async_session)):
     # Prepare the select statement
     stmt = select(Release).options(
-        selectinload(Release.labels),
-        selectinload(Release.artists),
+        joinedload(Release.release_artists).joinedload(ArtistReleaseAssociation.artist),
+        joinedload(Release.release_labels).joinedload(LabelReleaseAssociation.label),
         selectinload(Release.tracks),
     )
 
@@ -30,7 +33,16 @@ async def list_releases(session: AsyncSession = Depends(get_async_session)):
     result = await session.execute(stmt)
 
     # Fetch the results
-    releases = result.scalars().all()
+    releases = result.unique().scalars().all()
+
+    # Map labels and artists to release
+    for release in releases:
+        release.labels = [assoc.label for assoc in release.release_labels]
+        release.artists = [assoc.artist for assoc in release.release_artists]
+
+        # Remove association objects
+        del release.release_labels
+        del release.release_artists
 
     return releases
 
@@ -41,8 +53,8 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
     stmt = (
         select(Release)
         .options(
-            selectinload(Release.labels),
-            selectinload(Release.artists),
+            joinedload(Release.release_artists).joinedload(ArtistReleaseAssociation.artist),
+            joinedload(Release.release_labels).joinedload(LabelReleaseAssociation.label),
             selectinload(Release.tracks),
         )
         .where(Release.id == id)
@@ -52,7 +64,15 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
     result = await session.execute(stmt)
 
     # Fetch the results
-    release = result.scalars().first()
+    release = result.unique().scalars().first()
+
+    # Map labels and artists to release
+    release.labels = [assoc.label for assoc in release.release_labels]
+    release.artists = [assoc.artist for assoc in release.release_artists]
+
+    # Remove association objects
+    del release.release_labels
+    del release.release_artists
 
     return release
 
@@ -60,18 +80,18 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
 # update a release
 @router.put("/release/{id}")
 async def update_release(
-    id: str,
+    id: UUID4,
     release_update: ReleaseUpdate,
     analysis: bool = False,
     session: AsyncSession = Depends(get_async_session),
 ):
-    # Fetch the existing release
+    # Fetch the existing release along with its artists, labels, and tracks
     stmt = (
         select(Release)
         .options(
-            selectinload(Release.labels),
-            selectinload(Release.artists),
-            selectinload(Release.tracks),
+            joinedload(Release.release_artists).joinedload(ArtistReleaseAssociation.artist),
+            joinedload(Release.release_labels).joinedload(LabelReleaseAssociation.label),
+            joinedload(Release.tracks)
         )
         .where(Release.id == id)
     )
@@ -82,86 +102,66 @@ async def update_release(
         raise HTTPException(status_code=404, detail="Release not found")
 
     # Update Release fields
-    for var, value in vars(release_update).items():
-        if value is not None and var not in ["labels", "artists", "tracks"]:
-            setattr(release, var, value)
+    release_data = release_update.dict(exclude_unset=True)
+    for key, value in release_data.items():
+        if key in {'artists', 'labels', 'tracks'}:
+            continue  # Skip relationships here
+        setattr(release, key, value)
 
-    # Update related entities
-    existing_artist_ids = [artist.id for artist in release.artists]
-    for artist_update in release_update.artists:
-        if artist_update.id:
-            if artist_update.id in existing_artist_ids:
-                artist = next(
-                    (a for a in release.artists if a.id == artist_update.id), None
-                )
-                # Update artist fields
-                for var, value in vars(artist_update).items():
-                    if value is not None:
-                        setattr(artist, var, value)
+    # Update Artists
+    if release_update.artists is not None:
+        existing_artists = {assoc.artist_id: assoc for assoc in release.release_artists}
+        for artist_update in release_update.artists:
+            artist_assoc = existing_artists.get(artist_update.id)
+            if artist_assoc:
+                for key, value in artist_update.dict(exclude_unset=True).items():
+                    setattr(artist_assoc.artist, key, value)
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Artist ID {artist_update.id} not found in release",
-                )
-        else:
-            # Add new artist
-            new_artist = Artist(**artist_update.dict(exclude={"id"}))
-            release.artists.append(new_artist)
+                logger.info(f"Artist {artist_update.id} not found in release {release.id}")
 
-    existing_label_ids = [label.id for label in release.labels]
-    for label_update in release_update.labels:
-        if label_update.id:
-            if label_update.id in existing_label_ids:
-                label = next(
-                    (l for l in release.labels if l.id == label_update.id), None
-                )
-                # Update label fields
-                for var, value in vars(label_update).items():
-                    if value is not None:
-                        setattr(label, var, value)
+    # Update Labels
+    if release_update.labels is not None:
+        existing_labels = {assoc.label_id: assoc for assoc in release.release_labels}
+        for label_update in release_update.labels:
+            label_assoc = existing_labels.get(label_update.id)
+            if label_assoc:
+                for key, value in label_update.dict(exclude_unset=True).items():
+                    setattr(label_assoc.label, key, value)
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Label ID {label_update.id} not found in release",
-                )
-        else:
-            # Add new label
-            new_label = Label(**label_update.dict(exclude={"id"}))
-            release.labels.append(new_label)
+                logger.info(f"Label {label_update.id} not found in release {release.id}")
 
-    existing_track_ids = [track.id for track in release.tracks]
-    for track_update in release_update.tracks:
-        if track_update.id:
-            if track_update.id in existing_track_ids:
-                track = next(
-                    (t for t in release.tracks if t.id == track_update.id), None
-                )
-                # Update track fields
-                for var, value in vars(track_update).items():
-                    if value is not None:
-                        setattr(track, var, value)
-                        
-                # Analyze track if audio is present
-                if hasattr(track, 'audio') and track.audio and analysis:
+    # Update Tracks
+    if release_update.tracks is not None:
+        track_dict = {track.id: track for track in release.tracks}
+        for track_update in release_update.tracks:
+            track = track_dict.get(track_update.id)
+            if track:
+                for key, value in track_update.dict(exclude_unset=True).items():
+                    setattr(track, key, value)
+
+                if analysis and track.audio:
+                    # Assuming analyze_track_audio is a function you have defined
                     analysis_result = analyze_track_audio(track.audio)
                     track.bpm = analysis_result['detected_tempo']
                     track.key = analysis_result['camelot_key_notation']
-
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Track ID {track_update.id} not found in release",
-                )
-        else:
-            # Add new track
-            new_track = Track(**track_update.dict(exclude={"id"}))
-            release.tracks.append(new_track)
+                logger.info(f"Track {track_update.id} not found in release {release.id}")
 
     # Commit changes
     session.add(release)
     await session.commit()
 
+    # Return the updated release
+    # Map labels and artists to release
+    release.labels = [assoc.label for assoc in release.release_labels]
+    release.artists = [assoc.artist for assoc in release.release_artists]
+
+    # Remove association objects
+    del release.release_labels
+    del release.release_artists
+
     return release
+
 
 @router.delete("/release/{id}/track/{track_id}")
 async def delete_track(id: str, track_id: str, session: AsyncSession = Depends(get_async_session)):
@@ -286,14 +286,15 @@ async def add_new_empty_artist(id: str, name: str, session: AsyncSession = Depen
         if not release:
             raise HTTPException(status_code=404, detail="Release not found")
 
-        # Add new artist
-        new_artist = Artist()
-        new_artist.name = name
-        new_artist.release_id = id
-        
+        # Create new artist
+        new_artist = Artist(name=name)
         session.add(new_artist)
+        await session.flush()
 
-        # Commit changes
+        # Create association
+        new_assoc = ArtistReleaseAssociation(artist_id=new_artist.id, release_id=id)
+        session.add(new_assoc)
+
         await session.commit()
         
         # Return the new artist
@@ -320,9 +321,11 @@ async def add_new_empty_label(id: str, name: str, session: AsyncSession = Depend
         # Add new label
         new_label = Label()
         new_label.name = name
-        new_label.release_id = id
-        
-        session.add(new_label)
+        await session.flush()
+
+        # Create association
+        new_assoc = LabelReleaseAssociation(label_id=new_label.id, release_id=id)
+        session.add(new_assoc)
 
         # Commit changes
         await session.commit()

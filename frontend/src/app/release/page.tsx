@@ -141,8 +141,8 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
         </table>
       </div>
       <div className="printable flex">
-        {filteredReleases.map(release => (
-          <PrintReleaseDetails release={release} />
+        {filteredReleases.map((release, index) => (
+          <PrintReleaseDetails key={index} release={release} />
         ))}
       </div>
     </div>

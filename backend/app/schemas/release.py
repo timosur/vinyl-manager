@@ -1,7 +1,5 @@
 from pydantic import BaseModel, UUID4
 from typing import List, Optional
-from fastapi import UploadFile
-import base64
 
 class ArtistUpdate(BaseModel):
     id: UUID4

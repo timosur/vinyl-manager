@@ -1,5 +1,3 @@
-import { releaseService } from "@/service/release"
-
 // Dashboard of the vinyl manager, explains what it does
 export default async function Page() {
 
