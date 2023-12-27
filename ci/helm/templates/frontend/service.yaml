@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vinyl-frontend
+spec:
+  selector:
+    app: vinyl-frontend
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000

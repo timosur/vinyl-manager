@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinyl-audio-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vinyl-audio-analyzer
+  template:
+    metadata:
+      labels:
+        app: vinyl-audio-analyzer
+    spec:
+      containers:
+      - name: vinyl-audio-analyzer
+        image: [YOUR_AUDIO_ANALYZER_IMAGE]
+        ports:
+        - containerPort: 5000

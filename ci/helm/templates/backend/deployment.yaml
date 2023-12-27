@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinyl-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vinyl-backend
+  template:
+    metadata:
+      labels:
+        app: vinyl-backend
+    spec:
+      containers:
+      - name: vinyl-backend
+        image: [YOUR_BACKEND_IMAGE]
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENV
+          value: "development"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: vinyl-secrets
+              key: database-url
+        # Add other environment variables as needed

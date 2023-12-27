@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinyl-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vinyl-frontend
+  template:
+    metadata:
+      labels:
+        app: vinyl-frontend
+    spec:
+      containers:
+      - name: vinyl-frontend
+        image: [YOUR_FRONTEND_IMAGE]
+        ports:
+        - containerPort: 3000
+        env:
+        - name: API_URL
+          value: "http://vinyl-backend:8000"
+        # Add other environment variables as needed
