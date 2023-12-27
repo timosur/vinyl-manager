@@ -4,21 +4,24 @@ set -e
 
 cd ci
 
+# Generate a random tag
+export TAG=$(openssl rand -hex 4)
+
 # Login to Docker Hub
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD harbor.k8s.local
+docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.io
 
 # Build and push images to Docker Hub
 for service in "audio-analyzer" "backend" "frontend"; do
   cd $service
   cp docker/ops/Dockerfile .
-  docker build -t harbor.k8s.local/library/$service:latest .
-  docker push harbor.k8s.local/library/$service:latest
+  docker build -t docker.io/vinyl-manager/$service:$TAG .
+  docker push docker.io/vinyl-manager/$service:$TAG
   rm Dockerfile
 done
 
 # Deploy to Kubernetes
 helm build ./helm
-helm push ./helm harbor.k8s.local/library
+helm push ./helm docker.io/vinyl-manager/helm
 
 # Update the deployment
-helm upgrade --install --namespace=library library ./helm
+helm upgrade vinyl-manager ./helm --install --set image.tag=$TAG --set image.pullPolicy=Always --set image.repository=docker.io/vinyl-manager
