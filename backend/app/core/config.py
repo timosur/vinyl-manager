@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     def build_clean_database_url(cls, v: Optional[str], values: Dict[str, Any]):
         """Builds CLEAN_DATABASE_URL from DATABASE_URL."""
         v = values["DATABASE_URL"]
-        # Replace vinyl-postgres.vinyl-manager with vinyl-postgres-clean.vinyl-manager.svc.cluster.local
-        return v.replace("vinyl-postgres.vinyl-manager", "vinyl-postgres-clean.vinyl-manager.svc.cluster.local", 1) if v else v
+        # Replace vinyl-postgres.vinyl-manager with vinyl-postgres.vinyl-manager.svc.cluster.local
+        return v.replace("vinyl-postgres.vinyl-manager", "vinyl-postgres.vinyl-manager.svc.cluster.local", 1) if v else v
 
     @validator("ASYNC_DATABASE_URL")
     def build_async_database_url(cls, v: Optional[str], values: Dict[str, Any]):
