@@ -68,5 +68,5 @@ if [[ $TARGET == *"deploy"* ]]; then
     --set image.repository=ghcr.io/timosur/vinyl-manager \
     --set image.pullSecret=ghcr \
     --set backend.secretKey=$SECRET_KEY \
-    --set backend.disogsUserToken=$DISOGS_USER_TOKEN
+    --set backend.discogsUserToken=$DISCOGS_USER_TOKEN
 fi
