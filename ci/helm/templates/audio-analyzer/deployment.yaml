@@ -14,6 +14,11 @@ spec:
     spec:
       containers:
       - name: vinyl-audio-analyzer
-        image: [YOUR_AUDIO_ANALYZER_IMAGE]
+        image: {{ .Values.image.repository }}-audio-analyzer:{{ .Values.image.tag }}
         ports:
         - containerPort: 5000
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecret }}
+      nodeSelector:
+        kubernetes.io/hostname: knode

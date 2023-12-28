@@ -1,0 +1,12 @@
+apiVersion: stackgres.io/v1
+kind: SGCluster
+metadata:
+  name: vinyl-postgres
+  namespace: vinyl-manager
+spec:
+  instances: 1
+  postgres:
+    version: 'latest'
+  pods:
+    persistentVolume: 
+      size: '5Gi'

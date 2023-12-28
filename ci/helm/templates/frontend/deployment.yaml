@@ -14,10 +14,14 @@ spec:
     spec:
       containers:
       - name: vinyl-frontend
-        image: [YOUR_FRONTEND_IMAGE]
+        image: {{ .Values.image.repository }}-frontend:{{ .Values.image.tag }}
         ports:
         - containerPort: 3000
         env:
         - name: API_URL
-          value: "http://vinyl-backend:8000"
-        # Add other environment variables as needed
+          value: "http://vinyl-backend.{{ .Release.Namespace }}.svc.cluster.local:8080"
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecret }}
+      nodeSelector:
+        kubernetes.io/hostname: knode

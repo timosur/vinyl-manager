@@ -14,15 +14,31 @@ spec:
     spec:
       containers:
       - name: vinyl-backend
-        image: [YOUR_BACKEND_IMAGE]
+        image: {{ .Values.image.repository }}-backend:{{ .Values.image.tag }}
         ports:
         - containerPort: 8000
         env:
         - name: ENV
-          value: "development"
+          value: "production"
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: vinyl-secrets
-              key: database-url
-        # Add other environment variables as needed
+              name: vinyl-postgres-binding
+              key: uri
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: vinyl-backend-secret
+              key: secret_key
+        - name: DISCOGS_USER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: vinyl-backend-secret
+              key: discogs_user_token
+        - name: AUDIO_ANALYZER_URL
+          value: "http://vinyl-audio-analyzer.{{ .Release.Namespace }}.svc.cluster.local:8000"
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecret }}
+      nodeSelector:
+        kubernetes.io/hostname: knode

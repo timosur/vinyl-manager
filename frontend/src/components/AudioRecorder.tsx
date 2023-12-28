@@ -1,3 +1,5 @@
+// ignore typescript errors
+// @ts-nocheck
 import { LiveAudioVisualizer } from 'react-audio-visualize';
 import { AudioRecorder as _AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 

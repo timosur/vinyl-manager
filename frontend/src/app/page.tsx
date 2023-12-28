@@ -9,7 +9,7 @@ export default async function Page() {
         <p>It can import CSV files from <a href="https://www.deejay.de/">Deejay.de</a> and sync with <a href="https://www.discogs.com/">Discogs</a>.</p>
       </div>
       <div>
-        <p>It is a work in progress, so don't expect too much.</p>
+        <p>It is a work in progress, so don&rsquo;t expect too much.</p>
       </div>
     </div>
   )

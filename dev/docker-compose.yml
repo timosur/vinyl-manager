@@ -30,10 +30,6 @@ services:
     environment:
       - ENV=development
       - DATABASE_URL=${DATABASE_URL}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_SERVER=${POSTGRES_SERVER}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
       - DISCOGS_USER_TOKEN=${DISCOGS_USER_TOKEN}
       - AUDIO_ANALYZER_URL=http://vinyl-audio-analyzer:5000
