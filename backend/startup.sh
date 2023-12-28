@@ -1,7 +1,5 @@
 #!/bin/sh
-
-# Debug
-# printenv
+set -e
 
 # Running Migrations
 echo Running Migrations.
