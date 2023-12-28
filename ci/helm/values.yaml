@@ -8,4 +8,4 @@ image:
 
 backend:
   secretKey: x
-  disogsUserToken: x
+  discogsUserToken: x
