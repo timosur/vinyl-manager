@@ -33,7 +33,7 @@ spec:
               name: vinyl-backend-secret
               key: discogs_user_token
         - name: AUDIO_ANALYZER_URL
-          value: "http://vinyl-audio-analyzer.{{ .Release.Namespace }}.svc.cluster.local:8000"
+          value: "http://vinyl-audio-analyzer:5000"
       restartPolicy: Always
       imagePullSecrets:
       - name: {{ .Values.image.pullSecret }}
