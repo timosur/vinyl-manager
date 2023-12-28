@@ -9,3 +9,8 @@ image:
 backend:
   secretKey: x
   discogsUserToken: x
+
+postgres:
+  user: x
+  password: x
+  database: x

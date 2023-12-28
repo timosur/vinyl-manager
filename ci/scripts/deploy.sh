@@ -68,5 +68,8 @@ if [[ $TARGET == *"deploy"* ]]; then
     --set image.repository=ghcr.io/timosur/vinyl-manager \
     --set image.pullSecret=ghcr \
     --set backend.secretKey=$SECRET_KEY \
-    --set backend.discogsUserToken=$DISCOGS_USER_TOKEN
+    --set backend.discogsUserToken=$DISCOGS_USER_TOKEN \
+    --set postgres.user=$POSTGRES_USER \
+    --set postgres.password=$POSTGRES_PASSWORD \
+    --set postgres.database=$POSTGRES_DATABASE
 fi

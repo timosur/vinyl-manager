@@ -21,10 +21,7 @@ spec:
         - name: ENV
           value: "production"
         - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: vinyl-postgres-binding
-              key: uri
+          value: "postgresql://{{ .Values.postgres.user }}:{{ .Values.postgres.password }}@vinyl-postgres:5432/{{ .Values.postgres.database }}"
         - name: SECRET_KEY
           valueFrom:
             secretKeyRef:

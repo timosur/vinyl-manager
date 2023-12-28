@@ -1,0 +1,29 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: vinyl-postgres-pv-volume-v2  # Sets PV's name
+  labels:
+    type: local  # Sets PV's type to local
+    app: vinyl-postgres
+spec:
+  storageClassName: local-path
+  capacity:
+    storage: 5Gi # Sets PV Volume
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: vinyl-postgres-pv-claim-v2  # Sets name of PVC
+  labels:
+    app: vinyl-postgres
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce  # Sets read and write access
+  resources:
+    requests:
+      storage: 10Gi  # Sets volume size

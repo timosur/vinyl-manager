@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vinyl-postgres-config
+  labels:
+    app: vinyl-postgres
+data:
+  POSTGRES_DB: "{{ .Values.postgres.database }}"
+  POSTGRES_USER: "{{ .Values.postgres.user }}"
+  POSTGRES_PASSWORD: "{{ .Values.postgres.password }}"
