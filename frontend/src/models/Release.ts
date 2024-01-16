@@ -2,6 +2,12 @@ export interface Release {
   [key: string]: any;
   id: string;
   short: string;
+  year: string;
+  format: string;
+  genre: string;
+  purchased_at: string;
+  styles: string;
+  thumb: string;
   created_at: string;
   updated_at: string | null;
   name: string;

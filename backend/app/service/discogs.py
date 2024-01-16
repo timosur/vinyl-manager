@@ -1,8 +1,23 @@
 import discogs_client
 
 from app.core.config import settings
+from discogs_client.models import Release
 
 d_client = discogs_client.Client("VinylManager/0.2", user_token=settings.DISCOGS_USER_TOKEN)
+
+# Types
+
+class DiscogsRelease:
+  id: int
+  artists: list
+  title: str
+  labels: list
+  thumb: str
+  year: int
+  genres: list
+  styles: list
+  format: list
+  tracklist: list
 
 # Helper
 
@@ -58,7 +73,7 @@ def discogs_search(query, page = 0):
 
   return results
 
-def discogs_search_tracklist(query):
+def discogs_search_release(query) -> DiscogsRelease:
   results = d_client.search(query, type="release").page(0)
 
   if len(results) == 0:
@@ -66,26 +81,49 @@ def discogs_search_tracklist(query):
 
   release_id = results[0].data.get("id")
 
-  raw_tracklist = d_client.release(release_id).tracklist
-
-  return _map_tracklist(raw_tracklist)
+  return discogs_map_release(d_client.release(release_id))
 
 def discogs_get_release(release):
   return d_client.release(release)
+
+def discogs_map_release(release: Release) -> DiscogsRelease:
+   # Merge the name of all artists into a single string
+    artists = _map_artists(release.artists)
+
+    # Get the label name
+    labels = _map_labels(release.labels)
+
+    # Get the tracklist
+    tracklist = _map_tracklist(release.tracklist)
+
+    # Map genres to a comma-separated string
+    genres = ', '.join(release.genres)
+
+    # Map styles to a comma-separated string
+    styles = ', '.join(release.styles)
+
+    # Map formats names to a comma-separated string
+    formats = ', '.join([format['name'] for format in release.formats])
+
+    # Update the release with the new data
+    return {
+        'id': release.id,
+        'artists': artists,
+        'title': release.title,
+        'labels': labels,
+        'thumb': release.thumb,
+        'year': str(release.year),
+        'genres': genres,
+        'styles': styles,
+        'format': formats,
+        'tracklist': tracklist,
+    }
    
 
-def discogs_get_user_collection(username: str) -> list:
+def discogs_get_user_collection(username: str) -> list[DiscogsRelease]:
   collection = d_client.user(username).collection_folders[0].releases
 
   # Process each release in the collection
-  # 1. Map the data to only get the following needed fields:
-  #    - release ID
-  #    - release title
-  #    - release artist
-  #    - release label
-  #    - release year
-  #    - release cover image URL
-
   releases = []
 
   for raw_release in collection:
@@ -95,33 +133,6 @@ def discogs_get_user_collection(username: str) -> list:
       # Get the whole release data
       release = d_client.release(raw_release['id'])
 
-      # Merge the name of all artists into a single string
-      artists = _map_artists(release.artists)
-
-      # Get the label name
-      labels = _map_labels(release.labels)
-
-      # Get the release year
-      year = release.year
-
-      # Get the release cover image URL
-      image_url = release.thumb
-
-      # Create the release title
-      title = release.title
-
-      # Get the tracklist
-      tracklist = _map_tracklist(release.tracklist)
-
-      # Update the release with the new data
-      releases.append({
-          'id': raw_release['id'],
-          'artists': artists,
-          'labels': labels,
-          'year': year,
-          'image_url': image_url,
-          'title': title,
-          'tracklist': tracklist
-      })
+      releases.append(discogs_map_release(release))
 
   return releases

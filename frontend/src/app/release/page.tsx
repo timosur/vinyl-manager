@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { StarRating } from "@/components/StarRating";
 import { useRouter } from "next/navigation"
 import { PrintReleaseDetails } from "@/components/release/PrintReleaseDetails";
+import Image from "next/image";
 
 interface SearchableTableProps {
   releases: Release[];
@@ -92,6 +93,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
         <table className="w-full text-left table-auto border-collapse bg-gray-800">
         <thead className="text-sm text-gray-400 uppercase bg-gray-700">
             <tr>
+              <th className="px-4 py-3"></th>
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("name")}>
                 Name <SortIcon isSorted={sortColumn === "name"} direction={sortDirection} />
               </th>
@@ -110,6 +112,9 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
           <tbody className="divide-y divide-gray-600">
             {filteredReleases.map(release => (
               <tr key={release.id} className="hover:bg-gray-700 cursor-pointer transition-colors" onClick={() => router.push(`/release/${release.id}`)}>
+                <td className="px-4 py-3">
+                  <Image src={release.thumb} width={64} height={64} alt={release.name} />
+                </td>
                 <td className="px-4 py-3">{release.name}</td>
                 <td className="px-4 py-3">
                   {release.artists.map(artist => (

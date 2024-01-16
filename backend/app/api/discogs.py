@@ -1,7 +1,7 @@
 from http.client import HTTPException
 from fastapi import APIRouter, HTTPException
 
-from app.service.discogs import discogs_search_tracklist, discogs_get_user_collection, discogs_search
+from app.service.discogs import discogs_get_user_collection, discogs_search, discogs_search_release
 
 router = APIRouter()
 
@@ -11,12 +11,12 @@ async def search(query: str = "", page: int = 0):
 
 @router.get("/discogs/tracklist")
 async def tracklist(release: str = ""):
-  tracklist = discogs_search_tracklist(release)
+  release = discogs_search_release(release)
 
-  if tracklist is None:
+  if release is None or release.tracklist is None:
     raise HTTPException(status_code=404, detail="Release not found")
 
-  return tracklist
+  return release.tracklist
 
 @router.get("/discogs/collection")
 async def collection(username: str = ""):

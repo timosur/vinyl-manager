@@ -14,6 +14,12 @@ class Release(Base):
     name: Mapped[str] = Column(String)
     short: Mapped[str] = Column(String)
     notes: Mapped[str] = Column(String)
+    thumb: Mapped[str] = Column(String)
+    year: Mapped[int] = Column(String)
+    genre: Mapped[str] = Column(String)
+    styles: Mapped[str] = Column(String)
+    format: Mapped[str] = Column(String)
+    purchased_at: Mapped[str] = Column(String)
     
     release_artists = relationship('ArtistReleaseAssociation', back_populates='release')
     release_labels = relationship('LabelReleaseAssociation', back_populates='release')

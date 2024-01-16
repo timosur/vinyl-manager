@@ -12,6 +12,7 @@ import AudioPlayer from '@/components/AudioPlayer';
 import { AudioVisualizer } from 'react-audio-visualize';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { PrintReleaseDetails } from '@/components/release/PrintReleaseDetails';
+import Image from 'next/image';
 
 const EditRelease = ({ params }: { params: { id: string } }) => {
   const [release, setRelease] = useState<Release>({} as Release);
@@ -100,6 +101,10 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         </button>
       </div>
       <h1 className="text-2xl mb-2">Edit Release</h1>
+      {/* Release thumbnail image readonly display */}
+      <div className="flex mb-2">
+        <Image src={release.thumb} width={64} height={64} alt={release.name} />
+      </div>
       <input
         type="text"
         value={release.name}
@@ -121,6 +126,30 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         onChange={(e) => handleChange(e.target.value, 'notes')}
         className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
         placeholder="Release Notes"
+      />
+      {/* Release genres */}
+      <input
+        type="text"
+        value={release.genre}
+        onChange={(e) => handleChange(e.target.value, 'genres')}
+        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+        placeholder="Release Genres"
+      />
+      {/* Release styles */}
+      <input
+        type="text"
+        value={release.styles}
+        onChange={(e) => handleChange(e.target.value, 'styles')}
+        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+        placeholder="Release Styles"
+      />
+      {/* Release year */}
+      <input
+        type="number"
+        value={release.year}
+        onChange={(e) => handleChange(e.target.value, 'year')}
+        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+        placeholder="Release Year"
       />
       {/* Release artists */}
       <h2 className="text-xl mb-2">Artists</h2>
