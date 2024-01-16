@@ -324,6 +324,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                 <label className="block mb-2">
                   Rating:
                   <StarRating
+                    viewOnly={false}
                     initialRating={track.rating || 0}
                     onRating={(newRating: number) => handleItemChange('track', track.id, newRating, 'rating')}
                   />

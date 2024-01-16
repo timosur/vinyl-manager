@@ -5,4 +5,3 @@ from app.models.release import Release
 from app.models.track import Track
 from app.models.artist_release_association import ArtistReleaseAssociation
 from app.models.label_release_association import LabelReleaseAssociation
-

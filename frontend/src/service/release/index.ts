@@ -107,7 +107,7 @@ class ReleaseService {
     return null;
   }
 
-  public async deleteItem(type: 'track' | 'label' | 'artist', releaseId: string, itemId: string): Promise<any | null> {
+  public async deleteItem(type: 'track' | 'label' | 'artist', releaseId: string, itemId: string): Promise<any | null> {
     try {
       const response = await doRequest(`/api/v1/release/${releaseId}/${type}/${itemId}`, {
         method: 'DELETE',
@@ -119,10 +119,22 @@ class ReleaseService {
     return null;
   }
 
-  public async addItem(type: 'track' | 'label' | 'artist', releaseId: string, name: string): Promise<any | null> {
+  public async addItem(type: 'track' | 'label' | 'artist', releaseId: string, name: string): Promise<any | null> {
     try {
       const response = await doRequest(`/api/v1/release/${releaseId}/${type}/empty?name=${name}`, {
         method: 'POST',
+      });
+      if (response.status === 200) return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  }
+
+  public async delete(id: string): Promise<any | null> {
+    try {
+      const response = await doRequest(`/api/v1/release/${id}`, {
+        method: 'DELETE',
       });
       if (response.status === 200) return response.data;
     } catch (error) {

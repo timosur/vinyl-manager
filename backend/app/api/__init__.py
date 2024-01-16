@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 
-from app.api import release
-from app.api import utils
-from app.api import discogs
+from app.api import discogs, release, utils
 
 api_router = APIRouter()
 

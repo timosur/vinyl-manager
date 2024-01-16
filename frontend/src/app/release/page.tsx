@@ -24,16 +24,16 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
   const [sortColumn, setSortColumn] = useState<string | null>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  const sortData = (data: Release[], column: string | null, direction: "asc" | "desc") => {
+  const sortData = (data: Release[], column: string | null, direction: "asc" | "desc") => {
     if (!column) return data;
     // split column name by dot
     const columnParts = column.split(".");
-    
+
     return [...data].sort((a, b) => {
       // get value of column
       let aVal: any = a;
       let bVal: any = b;
-      
+
       for (const part of columnParts) {
         aVal = aVal[part];
         if (aVal === undefined) return 1;
@@ -56,6 +56,12 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
     const isAsc = sortColumn === column && sortDirection === "asc";
     setSortDirection(isAsc ? "desc" : "asc");
     setSortColumn(column);
+  };
+
+  const deleteRelease = async (id: string) => {
+    await releaseService.delete(id);
+    const releases = await releaseService.get();
+    setFilteredReleases(releases);
   };
 
   useEffect(() => {
@@ -91,7 +97,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
       />
       <div className="overflow-x-auto shadow">
         <table className="w-full text-left table-auto border-collapse bg-gray-800">
-        <thead className="text-sm text-gray-400 uppercase bg-gray-700">
+          <thead className="text-sm text-gray-400 uppercase bg-gray-700">
             <tr>
               <th className="px-4 py-3"></th>
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("name")}>
@@ -111,7 +117,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
           </thead>
           <tbody className="divide-y divide-gray-600">
             {filteredReleases.map(release => (
-              <tr key={release.id} className="hover:bg-gray-700 cursor-pointer transition-colors" onClick={() => router.push(`/release/${release.id}`)}>
+              <tr key={release.id} className="hover:bg-gray-700 transition-colors">
                 <td className="px-4 py-3">
                   <Image src={release.thumb} width={64} height={64} alt={release.name} />
                 </td>
@@ -126,7 +132,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                     <div key={track.id} className="flex justify-between items-center">
                       <span>{track.name} ({track.side})</span>
                       <div className="flex items-center">
-                        <StarRating initialRating={track.rating || 0} />
+                        <StarRating viewOnly={true} initialRating={track.rating || 0} />
                       </div>
                     </div>
                   ))}
@@ -138,7 +144,10 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                 </td>
                 {/* Edit button, onclick go to edit page */}
                 <td className="px-4 py-3">
-                  <a href={`/release/${release.id}`} className="text-blue-500 hover:text-blue-700">Edit</a>
+                  <a href={`/release/${release.id}`} className="text-blue-500 hover:text-blue-700">
+                    Edit
+                  </a>
+                  <button onClick={(e) => deleteRelease(release.id)}>Delete</button>
                 </td>
               </tr>
             ))}
