@@ -77,7 +77,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
     setRelease(updatedRelease);
   };
 
-  if (!release) return <div>Loading...</div>;
+  if (!release || !release.id) return <div>Loading...</div>;
 
   return (
     <div className="text-white bg-[#0e181a] p-6 rounded-lg shadow-md">
@@ -101,56 +101,79 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         </button>
       </div>
       <h1 className="text-2xl mb-2">Edit Release</h1>
-      {/* Release thumbnail image readonly display */}
-      <div className="flex mb-2">
-        <Image src={release.thumb} width={64} height={64} alt={release.name} />
+      {/* Release thumbnail image, display as Image and be able to edit the url */}
+      <div className="flex justify-center mb-4">
+        <Image src={release.thumb} width={200} height={200} alt={release.name} />
+        <input
+          type="text"
+          value={release.thumb}
+          onChange={(e) => handleChange(e.target.value, 'thumb')}
+          className="w-full p-2 ml-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none h-12 justify-end align-bottom"
+          placeholder="Release Thumbnail"
+        />
       </div>
-      <input
-        type="text"
-        value={release.name}
-        onChange={(e) => handleChange(e.target.value, 'name')}
-        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-        placeholder="Release Name"
-      />
+      <label className="block">
+        Name:
+        <input
+          type="text"
+          value={release.name}
+          onChange={(e) => handleChange(e.target.value, 'name')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Release Name"
+        />
+      </label>
       {/* Short Release name */}
-      <input
-        type="text"
-        value={release.short}
-        onChange={(e) => handleChange(e.target.value, 'short')}
-        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-        placeholder="Short Release Name"
-      />
+      <label className="block">
+        Short Name:
+        <input
+          type="text"
+          value={release.short}
+          onChange={(e) => handleChange(e.target.value, 'short')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Short Release Name"
+        />
+      </label>
       {/* Release notes */}
-      <textarea
-        value={release.notes}
-        onChange={(e) => handleChange(e.target.value, 'notes')}
-        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-        placeholder="Release Notes"
-      />
+      <label className="block">
+        Notes:
+        <textarea
+          value={release.notes}
+          onChange={(e) => handleChange(e.target.value, 'notes')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Release Notes"
+        />
+      </label>
       {/* Release genres */}
-      <input
-        type="text"
-        value={release.genre}
-        onChange={(e) => handleChange(e.target.value, 'genres')}
-        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-        placeholder="Release Genres"
-      />
+      <label className="block">
+        Genres:
+        <textarea
+          value={release.genre}
+          onChange={(e) => handleChange(e.target.value, 'genre')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Release Genres"
+        />
+      </label>
       {/* Release styles */}
-      <input
-        type="text"
-        value={release.styles}
-        onChange={(e) => handleChange(e.target.value, 'styles')}
-        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-        placeholder="Release Styles"
-      />
+      <label className="block">
+        Styles:
+        <textarea
+          value={release.styles}
+          onChange={(e) => handleChange(e.target.value, 'styles')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Release Styles"
+        />
+      </label>
       {/* Release year */}
-      <input
-        type="number"
-        value={release.year}
-        onChange={(e) => handleChange(e.target.value, 'year')}
-        className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-        placeholder="Release Year"
-      />
+      <label className="block">
+        Year:
+        <input
+          type="number"
+          value={release.year}
+          onChange={(e) => handleChange(e.target.value, 'year')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Release Year"
+        />
+      </label>
       {/* Release artists */}
       <h2 className="text-xl mb-2">Artists</h2>
       <div className="flex flex-wrap -mx-2">
