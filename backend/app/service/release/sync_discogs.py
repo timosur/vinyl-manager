@@ -20,27 +20,28 @@ async def sync_discogs(session: AsyncSession, username: str):
     if all(key in item for key in ["artists", "title", "labels"]):
       release_title = item["title"]
       release_stmt = await session.execute(
-        select(Release).where(Release.name == release_title)
+        select(Release).where(Release.short == str(item["id"]))
       )
       release = release_stmt.scalars().first()
-      if not release:
-        result = await session.execute(
-          insert(Release).values(
-            name=release_title,
-            short=str(item["id"]),
-            thumb=item["thumb"],
-            year=item["year"],
-            genre=item["genres"],
-            styles=item["styles"],
-            format=item["format"],
-            purchased_at="discogs",
-          )
+      if release:
+        logger.info(f"Skipping existing release: {release_title}")
+        continue
+
+      result = await session.execute(
+        insert(Release).values(
+          name=release_title,
+          short=str(item["id"]),
+          thumb=item["thumb"],
+          year=item["year"],
+          genre=item["genres"],
+          styles=item["styles"],
+          format=item["format"],
+          purchased_at="discogs",
         )
-        release_id = result.inserted_primary_key[0]
-        release = await session.get(Release, release_id)
-        logger.info(f"Created release {release_title} with ID {release_id}")
-      else:
-        logger.info(f"Found release {release_title} with ID {release.id}")
+      )
+      release_id = result.inserted_primary_key[0]
+      release = await session.get(Release, release_id)
+      logger.info(f"Created release {release_title} with ID {release_id}")
 
       for artist_name in item["artists"]:
         artist_stmt = await session.execute(

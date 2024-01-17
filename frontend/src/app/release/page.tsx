@@ -69,7 +69,9 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
       release.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       release.tracks.some(track => track.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       release.labels.some(label => label.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      release.artists.some(artist => artist.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      release.artists.some(artist => artist.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      release.genre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      release.styles?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     filtered = sortData(filtered || [], sortColumn, sortDirection);
@@ -112,6 +114,12 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.name")}>
                 Labels <SortIcon isSorted={sortColumn === "labels.0.name"} direction={sortDirection} />
               </th>
+              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.genre")}>
+                Genre <SortIcon isSorted={sortColumn === "labels.0.genre"} direction={sortDirection} />
+              </th>
+              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.styles")}>
+                Styles <SortIcon isSorted={sortColumn === "labels.0.styles"} direction={sortDirection} />
+              </th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -141,6 +149,12 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                   {release.labels.map(label => (
                     <div key={label.id}>{label.name}</div>
                   ))}
+                </td>
+                <td className="px-4 py-3">
+                  <span>{release.genre}</span>
+                </td>
+                <td className="px-4 py-3">
+                  <span>{release.styles}</span>
                 </td>
                 {/* Edit button, onclick go to edit page */}
                 <td className="px-4 py-3">
