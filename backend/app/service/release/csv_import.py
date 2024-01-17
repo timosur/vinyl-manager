@@ -1,6 +1,8 @@
 import csv
 from io import StringIO
 
+import requests
+
 from app.core.logger import logger
 from app.models import (
   Artist,
@@ -27,68 +29,109 @@ async def import_deejay_de(session: AsyncSession, file: UploadFile):
     release_ids = []
     for item in csv_data:
       if all(key in item for key in ["Artist", "Title", "Label", "Label No"]):
-        # Get discogs release
-        discogs_release = discogs_search_release(f"{item['Title']} {item['Label No']}")
+        # Check if release already exists
+        release_stmt = await session.execute(
+          select(Release).where(Release.name == item["Title"])
+        )
+        release = release_stmt.scalars().first()
 
-        if discogs_release is None:
+        if release:
+          logger.info(f"Found release {item['Title']} with ID {release.id}")
+          logger.info(f"Skipping release {item['Title']}")
+          continue
+
+        # Get discogs release
+        original_release = discogs_search_release(f"{item['Title']} {item['Label No']}")
+
+        if original_release is None:
           logger.warning(
             f"Could not find discogs release for {item['Title']} {item['Label No']}"
           )
 
           # Try again without the label number
-          discogs_release = discogs_search_release(item["Title"])
+          original_release = discogs_search_release(item["Title"])
 
-          if discogs_release is None:
+          if original_release is None:
             logger.warning(f"Could not find discogs release for {item['Title']}")
-            logger.warning(f"Skipping {item['Title']}...")
 
-            continue
-
-        # Check if release catno matches Label No, remove all whitespace, lowercase
+        # Check if release catno matches Label No and if label name matches label, remove all whitespace, lowercase
         if (
-          discogs_release["catno"].replace(" ", "").lower()
-          != item["Label No"].replace(" ", "").lower()
+          original_release is not None and
+          (
+            original_release["catno"].lower().replace(" ", "") != item["Label No"].lower().replace(" ", "") 
+            or
+            item["Label"].lower().replace(" ", "") not in original_release["all_labels"].lower().replace(" ", "")
+          )
         ):
           logger.warning(
-            f"Discogs release catno {discogs_release['catno']} does not match Label No {item['Label No']}"
+            f"Discogs release {original_release['title']} does not match deejay.de release {item['Title']}"
           )
-          logger.warning(f"Skipping {item['Title']}...")
 
+          original_release = None
+        
+        # If discogs release is still not found, get tracklist from deejay.de
+        if original_release is None:
+          logger.info(f"Getting tracklist from deejay.de for {item['Title']}")
+          
+          # Call https://www.deejay.de/ajaxHelper/fp.php?t=item["ID"]&DEEJAY_SHOP=&s=
+          # Get tracklist from response
+          request_url = f"https://www.deejay.de/ajaxHelper/fp.php?t={item['ID']}&DEEJAY_SHOP=&s="
+          response = requests.get(request_url)
+          release_info = response.text
+
+          # Splitting the string into parts
+          parts = release_info.split("~")
+
+          # Identifying parts with track information
+          # Assuming that track info parts contain '\', followed by a side and track number (e.g., A1, B2)
+          track_info_parts = [part for part in parts if "\\" in part and "|" in part]
+
+          # Extracting track names and sides
+          tracks = []
+          for part in track_info_parts:
+              side_track_split = part.split("\\")[-1].split("|")  # Splitting to get side and track number
+              side_and_track_number = side_track_split[0].strip()  # Extracting the side and track number (e.g., A1, B2)
+              track_name = side_track_split[1].strip()  # Extracting the track name
+              tracks.append({
+                "title": track_name,
+                "position": side_and_track_number,
+                "duration": None,
+              })
+
+          original_release = {
+            "catno": item["Label No"],
+            "thumb": None,
+            "year": None,
+            "genres": "Electronic",
+            "styles": None,
+            "format": "Vinyl",
+            "tracklist": tracks
+          }
+        
+        result = await session.execute(
+          insert(Release).values(
+            name=item["Title"],
+            short=item["Label No"],
+            thumb=original_release["thumb"],
+            year=original_release["year"],
+            genre=original_release["genres"],
+            styles=original_release["styles"],
+            format=original_release["format"],
+            purchased_at="deejay.de",
+          )
+        )
+        release_id = (
+          result.inserted_primary_key[0]
+          if result.inserted_primary_key is not None
+          else None
+        )
+
+        if release_id is None:
+          logger.warning(f"Could not create release {item['Title']}")
           continue
 
-        # Check if release exists, if not create it
-        release_stmt = await session.execute(
-          select(Release).where(Release.name == item["Title"])
-        )
-        release = release_stmt.scalars().first()
-        if not release:
-          result = await session.execute(
-            insert(Release).values(
-              name=item["Title"],
-              short=item["Label No"],
-              thumb=discogs_release["thumb"],
-              year=discogs_release["year"],
-              genre=discogs_release["genres"],
-              styles=discogs_release["styles"],
-              format=discogs_release["format"],
-              purchased_at="deejay.de",
-            )
-          )
-          release_id = (
-            result.inserted_primary_key[0]
-            if result.inserted_primary_key is not None
-            else None
-          )
-
-          if release_id is None:
-            logger.warning(f"Could not create release {item['Title']}")
-            continue
-
-          logger.info(f"Created release {item['Title']} with ID {release_id}")
-          release = await session.get(Release, release_id)
-        else:
-          release_id = release.id
-          logger.info(f"Found release {item['Title']} with ID {release_id}")
+        logger.info(f"Created release {item['Title']} with ID {release_id}")
+        release = await session.get(Release, release_id)
 
         # Check if artist exists, if not create it
         artist_stmt = await session.execute(
@@ -149,8 +192,9 @@ async def import_deejay_de(session: AsyncSession, file: UploadFile):
           )
 
         # Process tracklist from discogs
-        if discogs_release["tracklist"] is not None:
-          for track in discogs_release["tracklist"]:
+        if original_release["tracklist"] is not None:
+          for track in original_release["tracklist"]:
+            logger.info(f"Adding track {track['title']} to release {release.name}")
             await session.execute(
               insert(Track).values(
                 name=track["title"],

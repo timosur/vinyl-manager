@@ -118,8 +118,8 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
           <tbody className="divide-y divide-gray-600">
             {filteredReleases.map(release => (
               <tr key={release.id} className="hover:bg-gray-700 transition-colors">
-                <td className="px-4 py-3">
-                  <Image src={release.thumb} width={64} height={64} alt={release.name} />
+                <td className="px-3 py-1">
+                  {release.thumb && (<Image src={release.thumb} width={120} height={120} alt={release.name} />)}
                 </td>
                 <td className="px-4 py-3">{release.name}</td>
                 <td className="px-4 py-3">
@@ -153,6 +153,10 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
             ))}
           </tbody>
         </table>
+        {/* Count of releases */}
+        <div className="text-sm text-gray-400 uppercase bg-gray-700 p-2">
+          {filteredReleases.length} Releases
+        </div>
       </div>
       <div className="printable flex">
         {filteredReleases.map((release, index) => (

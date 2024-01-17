@@ -110,13 +110,16 @@ def discogs_map_release(release: Release) -> DiscogsRelease:
   tracklist = _map_tracklist(release.tracklist)
 
   # Map genres to a comma-separated string
-  genres = ", ".join(release.genres)
+  genres = ", ".join(release.genres) if release.genres else None
 
   # Map styles to a comma-separated string
-  styles = ", ".join(release.styles)
+  styles = ", ".join(release.styles) if release.styles else None
 
   # Map formats names to a comma-separated string
   formats = ", ".join([format["name"] for format in release.formats])
+
+  # Map labels to a comma-separated string
+  all_labels = ", ".join(labels) if labels else None
 
   # Update the release with the new data
   return {
@@ -124,6 +127,7 @@ def discogs_map_release(release: Release) -> DiscogsRelease:
     "artists": artists,
     "title": release.title,
     "labels": labels,
+    "all_labels": all_labels,
     "thumb": release.thumb,
     "year": str(release.year),
     "genres": genres,
