@@ -1,6 +1,31 @@
 # Build images for all services and push them to Docker Hub
 set -e
 
+source .env
+
+# List of required environment variables
+required_env_vars=(
+  "GITHUB_TOKEN"
+  "SECRET_KEY"
+  "DISCOGS_USER_TOKEN"
+  "POSTGRES_USER"
+  "POSTGRES_PASSWORD"
+  "POSTGRES_DATABASE"
+)
+
+# Function to check if each environment variable is set
+check_env_vars() {
+  for var in "${required_env_vars[@]}"; do
+    if [ -z "${!var}" ]; then
+      echo "Error: Environment variable $var is not set."
+      exit 1
+    fi
+  done
+}
+
+# Checking environment variables
+check_env_vars
+
 # Parse arguments
 # 1. Target (build,deploy) - default: build,deploy
 TARGET=${1:-"build,deploy"}
@@ -43,14 +68,14 @@ if [[ $TARGET == *"deploy"* ]]; then
   # Set version and appVersion in Chart.yaml
   sed -i '' "s/version: .*/version: $TAG/g" Chart.yaml
   sed -i '' "s/appVersion: .*/appVersion: $TAG/g" Chart.yaml
-  
+
   helm package .
   helm push vinyl-manager-$TAG.tgz oci://ghcr.io/timosur
   rm vinyl-manager-$TAG.tgz
 
   # Create pull secret for private images, using the GitHub token
   # Check if the secret already exists in namespace vinyl-manager
-  if ! kubectl get secret ghcr -n vinyl-manager > /dev/null 2>&1; then
+  if ! kubectl get secret ghcr -n vinyl-manager >/dev/null 2>&1; then
     kubectl create secret docker-registry ghcr \
       --docker-server=ghcr.io \
       --docker-username=timosur \
