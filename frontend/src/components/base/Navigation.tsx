@@ -4,12 +4,14 @@ import {
   Cog6ToothIcon,
   HomeIcon,
   CircleStackIcon,
-  DocumentArrowUpIcon
+  DocumentArrowUpIcon,
+  MusicalNoteIcon,
 } from '@heroicons/react/24/outline'
 
 let navigation = [
   { name: 'Home', href: '/', icon: HomeIcon, current: false },
   { name: 'Releases', href: '/release', icon: CircleStackIcon, current: false },
+  { name: 'Mixtape', href: '/mixtape', icon: MusicalNoteIcon, current: false },
   { name: 'Import', href: '/import', icon: DocumentArrowUpIcon, current: false },
 ];
 

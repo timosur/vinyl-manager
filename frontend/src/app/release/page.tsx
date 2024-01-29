@@ -6,6 +6,7 @@ import { StarRating } from "@/components/StarRating";
 import { useRouter } from "next/navigation"
 import { PrintReleaseDetails } from "@/components/release/PrintReleaseDetails";
 import Image from "next/image";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 interface SearchableTableProps {
   releases: Release[];
@@ -58,7 +59,9 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
     setSortColumn(column);
   };
 
-  const deleteRelease = async (id: string) => {
+  const deleteRelease = async (e: any, id: string) => {
+    e.preventDefault();
+
     await releaseService.delete(id);
     const releases = await releaseService.get();
     setFilteredReleases(releases);
@@ -101,6 +104,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
         <table className="w-full text-left table-auto border-collapse bg-gray-800">
           <thead className="text-sm text-gray-400 uppercase bg-gray-700">
             <tr>
+              <th className="px-3 py-1">ID Number</th>
               <th className="px-4 py-3"></th>
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("name")}>
                 Name <SortIcon isSorted={sortColumn === "name"} direction={sortDirection} />
@@ -126,16 +130,23 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
           <tbody className="divide-y divide-gray-600">
             {filteredReleases.map(release => (
               <tr key={release.id} className="hover:bg-gray-700 transition-colors">
-                <td className="px-3 py-1">
-                  {release.thumb && (<Image src={release.thumb} width={120} height={120} alt={release.name} />)}
+                <td className="px-3 py-1 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
+                  <span>{release.id_number}</span>
                 </td>
-                <td className="px-4 py-3">{release.name}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-1 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
+                  <div style={{ width: "80px", height: "80px" }} className="relative">
+                    {release.thumb && (<Image src={release.thumb} width={0} height={0} alt={release.name} layout="fill" />)}
+                  </div>
+                </td>
+                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
+                  <span>{release.name}</span>
+                </td>
+                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   {release.artists.map(artist => (
                     <div key={artist.id}>{artist.name}</div>
                   ))}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   {release.tracks.map(track => (
                     <div key={track.id} className="flex justify-between items-center">
                       <span>{track.name} ({track.side})</span>
@@ -145,23 +156,22 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                     </div>
                   ))}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   {release.labels.map(label => (
                     <div key={label.id}>{label.name}</div>
                   ))}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   <span>{release.genre}</span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   <span>{release.styles}</span>
                 </td>
                 {/* Edit button, onclick go to edit page */}
                 <td className="px-4 py-3">
-                  <a href={`/release/${release.id}`} className="text-blue-500 hover:text-blue-700">
-                    Edit
+                  <a onClick={(e) => deleteRelease(e, release.id)} className="text-red-500 hover:text-red-700 cursor-pointer">
+                    <TrashIcon className="h-8 w-8" />
                   </a>
-                  <button onClick={(e) => deleteRelease(release.id)}>Delete</button>
                 </td>
               </tr>
             ))}

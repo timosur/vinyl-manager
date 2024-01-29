@@ -12,6 +12,7 @@ class Release(Base):
 
   id: Mapped[UUID] = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
 
+  id_number: Mapped[str] = Column(String, unique=True)
   name: Mapped[str] = Column(String)
   short: Mapped[str] = Column(String)
   notes: Mapped[str] = Column(String)

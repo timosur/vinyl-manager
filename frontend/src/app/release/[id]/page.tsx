@@ -81,6 +81,10 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="text-white bg-[#0e181a] p-6 rounded-lg shadow-md">
+      {/* Button on the left to go back in history to the list */}
+      <div className="flex justify-start mb-4">
+        <button onClick={() => window.location.href = '/release'} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Back</button>
+      </div>
       {/* Buttons to the right */}
       <div className="flex justify-end mb-4">
         {/* Checkbox if tracks should be analyzed on safe or not */}
@@ -103,7 +107,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
       <h1 className="text-2xl mb-2">Edit Release</h1>
       {/* Release thumbnail image, display as Image and be able to edit the url */}
       <div className="flex justify-center mb-4">
-        <Image src={release.thumb} width={200} height={200} alt={release.name} />
+        {release.thumb ? (<Image src={release.thumb} width={200} height={200} alt={release.name} />) : (<div className="w-20 h-20 bg-gray-600"></div>)}
         <input
           type="text"
           value={release.thumb}
@@ -113,13 +117,23 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         />
       </div>
       <label className="block">
+        ID Number:
+        <input
+          type="text"
+          value={release.id_number}
+          onChange={(e) => handleChange(e.target.value.replace("0", "").padStart(6, "0"), 'id_number')}
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="ID Number"
+        />
+      </label>
+      <label className="block">
         Name:
         <input
           type="text"
           value={release.name}
           onChange={(e) => handleChange(e.target.value, 'name')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Release Name"
+          placeholder="Name"
         />
       </label>
       {/* Short Release name */}
@@ -130,7 +144,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={release.short}
           onChange={(e) => handleChange(e.target.value, 'short')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Short Release Name"
+          placeholder="Short Name"
         />
       </label>
       {/* Release notes */}
@@ -140,7 +154,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={release.notes}
           onChange={(e) => handleChange(e.target.value, 'notes')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Release Notes"
+          placeholder="Notes"
         />
       </label>
       {/* Release genres */}
@@ -150,7 +164,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={release.genre}
           onChange={(e) => handleChange(e.target.value, 'genre')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Release Genres"
+          placeholder="Genres"
         />
       </label>
       {/* Release styles */}
@@ -160,7 +174,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={release.styles}
           onChange={(e) => handleChange(e.target.value, 'styles')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Release Styles"
+          placeholder="Styles"
         />
       </label>
       {/* Release year */}
@@ -171,7 +185,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={release.year}
           onChange={(e) => handleChange(e.target.value, 'year')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Release Year"
+          placeholder="Year"
         />
       </label>
       {/* Release artists */}

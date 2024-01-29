@@ -1,5 +1,6 @@
 export interface Release {
   [key: string]: any;
+  id_number: string;
   id: string;
   short: string;
   year: string;

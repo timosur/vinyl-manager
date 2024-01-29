@@ -1,5 +1,3 @@
-from http.client import HTTPException
-
 from fastapi import APIRouter, HTTPException
 
 from app.service.discogs import (

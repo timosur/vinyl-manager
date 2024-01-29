@@ -32,6 +32,8 @@ class TrackUpdate(BaseModel):
 
 
 class ReleaseUpdate(BaseModel):
+  id_number: Optional[str]
+  thumb: Optional[str]
   name: Optional[str]
   short: Optional[str]
   notes: Optional[str]
