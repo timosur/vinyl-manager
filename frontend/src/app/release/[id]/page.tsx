@@ -7,7 +7,7 @@ import { formatMinutesToSeconds, formatSecondsToMinutes } from '@/helper/time';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import { CamelotWheel } from '@/components/CamelotWheel';
 import AudioPlayer from '@/components/AudioPlayer';
-// ignore TS error for now
+import { DNA } from 'react-loader-spinner'
 // @ts-ignore
 import { AudioVisualizer } from 'react-audio-visualize';
 import { AudioRecorder } from '@/components/AudioRecorder';
@@ -20,6 +20,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
   const [newTrackName, setNewTrackName] = useState('');
   const [newArtistName, setNewArtistName] = useState('');
   const [newLabelName, setNewLabelName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchRelease = async () => {
@@ -72,15 +73,28 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
 
   // Save release
   const handleSave = async () => {
-    const updatedRelease = await releaseService.update(params.id as string, release, analysis);
+    // Add loading spinner
+    setIsSaving(true);
+    await releaseService.update(params.id as string, release, analysis);
 
-    setRelease(updatedRelease);
+    location.href = `/release`;
   };
 
   if (!release || !release.id) return <div>Loading...</div>;
 
   return (
     <div className="text-white bg-[#0e181a] p-6 rounded-lg shadow-md">
+      {/* Loading spinner absolut, dark transparent background */}
+      <div className={'fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 ' + (isSaving ? '' : 'hidden')}>
+        <DNA
+          visible={true}
+          height="80"
+          width="80"
+          ariaLabel="dna-loading"
+          wrapperStyle={{}}
+          wrapperClass="dna-wrapper"
+          />
+      </div>
       {/* Button on the left to go back in history to the list */}
       <div className="flex justify-start mb-4">
         <button onClick={() => window.location.href = '/release'} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Back</button>

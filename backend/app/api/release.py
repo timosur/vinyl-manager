@@ -66,6 +66,13 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
   # Fetch the results
   release = result.unique().scalars().first()
 
+  # Get latest id_number + 1 (e.g. 000002) number is a string, int needs to be extracted first by removing leading zeros
+  stmt = select(Release).where(Release.id_number != None).order_by(Release.id_number.desc()).limit(1)
+  result = await session.execute(stmt)
+  latest_release = result.scalars().first()
+  if latest_release:
+    release.id_number = str(int(latest_release.id_number) + 1).zfill(6)
+
   # Map labels and artists to release
   release.labels = [assoc.label for assoc in release.release_labels]
   release.artists = [assoc.artist for assoc in release.release_artists]

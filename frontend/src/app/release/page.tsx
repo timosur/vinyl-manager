@@ -22,7 +22,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredReleases, setFilteredReleases] = useState<Release[]>(releases);
 
-  const [sortColumn, setSortColumn] = useState<string | null>("name");
+  const [sortColumn, setSortColumn] = useState<string | null>("id_number");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const sortData = (data: Release[], column: string | null, direction: "asc" | "desc") => {
@@ -39,16 +39,19 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
         aVal = aVal[part];
         if (aVal === undefined) return 1;
         bVal = bVal[part];
-        if (bVal === undefined) return 1;
+        if (bVal === undefined) return -1;
       }
 
       // lower strings
       if (typeof aVal === "string") aVal = (aVal as string).toLowerCase();
       if (typeof bVal === "string") bVal = (bVal as string).toLowerCase();
 
-      // sort by value
+      // sort by value, if value empty, sort to bottom
+      if (aVal === null) return 1;
+      if (bVal === null) return -1;
       if (aVal < bVal) return direction === "asc" ? -1 : 1;
       if (aVal > bVal) return direction === "asc" ? 1 : -1;
+
       return 0;
     });
   };
@@ -104,7 +107,9 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
         <table className="w-full text-left table-auto border-collapse bg-gray-800">
           <thead className="text-sm text-gray-400 uppercase bg-gray-700">
             <tr>
-              <th className="px-3 py-1">ID Number</th>
+              <th className="px-3 py-1 cursor-pointer" onClick={() => handleSort("id_number")}>
+                ID Number <SortIcon isSorted={sortColumn === "id_number"} direction={sortDirection} />
+              </th>
               <th className="px-4 py-3"></th>
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("name")}>
                 Name <SortIcon isSorted={sortColumn === "name"} direction={sortDirection} />

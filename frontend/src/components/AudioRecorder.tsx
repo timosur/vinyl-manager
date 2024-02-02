@@ -11,9 +11,13 @@ export const AudioRecorder = ({ onRecordingComplete }: { onRecordingComplete: (b
             onRecordingComplete={onRecordingComplete}
             recorderControls={recorder}
             audioTrackConstraints={{
+                autoGainControl: false,
                 noiseSuppression: false,
                 echoCancellation: false,
-              }} 
+                channelCount: 1,
+                sampleRate: 44100,
+                sampleSize: 16,
+            }} 
         />
 
         {recorder.mediaRecorder && (
