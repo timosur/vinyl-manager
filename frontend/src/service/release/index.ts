@@ -131,6 +131,18 @@ class ReleaseService {
     return null;
   }
 
+  public async create(name: string): Promise<any | null> {
+    try {
+      const response = await doRequest('/api/v1/release/empty?name=' + name, {
+        method: 'POST',
+      });
+      if (response.status === 200) return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  }
+
   public async delete(id: string): Promise<any | null> {
     try {
       const response = await doRequest(`/api/v1/release/${id}`, {

@@ -21,6 +21,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredReleases, setFilteredReleases] = useState<Release[]>(releases);
+  const [releaseName, setReleaseName] = useState("");
 
   const [sortColumn, setSortColumn] = useState<string | null>("id_number");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -62,6 +63,12 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
     setSortColumn(column);
   };
 
+  const createRelease = async () => {
+    const release = await releaseService.create(releaseName);
+
+    location.href = `/release/${release.id}`;
+  }
+
   const deleteRelease = async (e: any, id: string) => {
     e.preventDefault();
 
@@ -89,8 +96,8 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
       {/* Button on the right */}
       <div className="flex justify-end mb-4">
         {/* New release by name */}
-        <input type="text" placeholder="Release Name" className="p-2 mr-2 bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors" />
-        <button className="p-2 bg-blue-500 rounded hover:bg-blue-600">
+        <input type="text" placeholder="Release Name" value={releaseName} className="p-2 mr-2 bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors" onChange={(e) => setReleaseName(e.target.value)} />
+        <button className="p-2 bg-blue-500 rounded hover:bg-blue-600" onClick={createRelease}>
           New Release
         </button>
         <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
@@ -175,7 +182,7 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                 {/* Edit button, onclick go to edit page */}
                 <td className="px-4 py-3">
                   <a onClick={(e) => deleteRelease(e, release.id)} className="text-red-500 hover:text-red-700 cursor-pointer">
-                    <TrashIcon className="h-8 w-8" />
+                    <TrashIcon className="h-5 w-5" />
                   </a>
                 </td>
               </tr>

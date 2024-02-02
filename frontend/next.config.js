@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'www.deejay.de',
       },
+      {
+        protocol: 'https',
+        hostname: 'deejay.de',
+      },
     ],
   },
 }

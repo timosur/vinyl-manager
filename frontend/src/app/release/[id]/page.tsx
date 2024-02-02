@@ -93,7 +93,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           ariaLabel="dna-loading"
           wrapperStyle={{}}
           wrapperClass="dna-wrapper"
-          />
+        />
       </div>
       {/* Button on the left to go back in history to the list */}
       <div className="flex justify-start mb-4">
@@ -221,7 +221,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
               {/* Remove */}
               <div>
                 <button onClick={() => handleItemRemove('artist', artist.id)} className="text-red-500 hover:text-red-700">
-                  <TrashIcon className="w-6 h-6" />
+                  <TrashIcon className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -402,6 +402,25 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           />
           <button onClick={(e) => handleItemAdd('track', newTrackName)} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Add Track</button>
         </div>
+      </div>
+      {/* Buttons to the right */}
+      <div className="flex justify-end mt-4">
+        {/* Checkbox if tracks should be analyzed on safe or not */}
+        <label className="flex items-center mr-2">
+          <input
+            type="checkbox"
+            checked={analysis}
+            onChange={(e) => setAnalysis(e.target.checked)}
+            className="mr-2"
+          />
+          Analyze Tracks
+        </label>
+        {/* Save button */}
+        <button onClick={handleSave} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Save</button>
+        {/* Print button */}
+        <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
+          Print Details
+        </button>
       </div>
       <div className="printable">
         <PrintReleaseDetails release={release} />

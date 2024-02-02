@@ -22,8 +22,6 @@ services:
     build:
       context: ../backend
       dockerfile: docker/dev/Dockerfile
-    depends_on:
-      - vinyl-postgres
     ports:
       - 8000:8000
     command: uvicorn main:app --host 0.0.0.0 --reload
@@ -70,8 +68,6 @@ services:
       - PORT=3000
       - APP_ENVIRONMENT=local
       - API_URL=http://vinyl-backend:8000
-    depends_on:
-      - vinyl-backend
     labels:
       - 'traefik.backend=frontend'
       - 'traefik.enable=true'
@@ -86,8 +82,6 @@ services:
       - ../frontend/public:/usr/src/app/public:cached
       - ../frontend/styles:/usr/src/app/styles:cached
     working_dir: /usr/src/app
-    dns:
-      - 8.8.8.8
     networks:
       - internal
 
