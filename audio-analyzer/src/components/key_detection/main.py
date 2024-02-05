@@ -43,7 +43,7 @@ def analyze_audio_file(file_path):
     delete_keyfinder(kf)
     
     key_name = get_key_name(key)
-    camelot_key = camelot[key_name]
-    open_key_key = open_key[key_name]
+    camelot_key = camelot[key_name] if key_name in camelot else None
+    open_key_key = open_key[key_name] if key_name in open_key else None
 
     return key_name, camelot_key, open_key_key

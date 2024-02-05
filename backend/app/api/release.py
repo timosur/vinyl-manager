@@ -27,7 +27,7 @@ async def list_releases(session: AsyncSession = Depends(get_async_session)):
     joinedload(Release.release_artists).joinedload(ArtistReleaseAssociation.artist),
     joinedload(Release.release_labels).joinedload(LabelReleaseAssociation.label),
     selectinload(Release.tracks),
-  )
+  ).order_by(Release.id_number.asc())
 
   # Execute the query asynchronously
   result = await session.execute(stmt)
@@ -89,6 +89,34 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
 
   return release
 
+# update all release styles, combining track styles
+@router.put("/release/styles")
+async def update_release_styles(session: AsyncSession = Depends(get_async_session)):
+  # Prepare the select statement
+  stmt = select(Release).options(selectinload(Release.tracks))
+
+  # Execute the query asynchronously
+  result = await session.execute(stmt)
+
+  # Fetch the results
+  releases = result.unique().scalars().all()
+
+  # Update styles
+  for release in releases:
+    styles = []
+    for track in release.tracks:
+      if track.genre:
+        styles.append(track.genre)
+
+    # Remove duplicate styles
+    release.styles = ", ".join(list(set(styles)))
+
+    # Commit changes
+    session.add(release)
+
+  await session.commit()
+
+  return {"status": "OK"}
 
 # delete a release
 @router.delete("/release/{id}")
@@ -200,11 +228,16 @@ async def update_release(
   # Update Tracks
   if release_update.tracks is not None:
     track_dict = {track.id: track for track in release.tracks}
+    styles = []
+
     for track_update in release_update.tracks:
       track = track_dict.get(track_update.id)
       if track:
         for key, value in track_update.dict(exclude_unset=True).items():
           setattr(track, key, value)
+
+        if track.genre:
+          styles.append(track.genre)
 
         if analysis and track.audio:
           # Assuming analyze_track_audio is a function you have defined
@@ -213,6 +246,9 @@ async def update_release(
           track.key = analysis_result["camelot_key_notation"]
       else:
         logger.info(f"Track {track_update.id} not found in release {release.id}")
+
+    # Update release styles on basis of track styles
+    release.styles = ", ".join(list(set(styles)))
 
   # Commit changes
   session.add(release)

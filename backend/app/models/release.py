@@ -26,7 +26,7 @@ class Release(Base):
   release_artists = relationship("ArtistReleaseAssociation", back_populates="release")
   release_labels = relationship("LabelReleaseAssociation", back_populates="release")
 
-  tracks = relationship("Track", back_populates="release")
+  tracks = relationship("Track", back_populates="release", order_by="Track.side")
 
   created_at: Mapped[DateTime] = Column(
     DateTime(timezone=True), server_default=func.now()
