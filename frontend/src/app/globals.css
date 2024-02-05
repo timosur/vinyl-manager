@@ -37,7 +37,6 @@ input {
   transform-origin: bottom center;
   text-align: center;
   clip-path: polygon(0% 0, 100% 0, 82% 35%, 17% 35%);
-  cursor: pointer;
 }
 
 .key-wheel-segment-inner {
@@ -49,7 +48,6 @@ input {
   transform-origin: bottom center;
   text-align: center;
   clip-path: polygon(0% 0%, 100% 0%, 66% 71%, 37% 71%);
-  cursor: pointer;
 }
 
 .selected {

@@ -18,7 +18,7 @@ export const CamelotWheelSegment = ({ type, keySignature, onSelectKey, index, to
   );
 };
 
-export const CamelotWheel = ({ selectedKey, onSelectKey }: { selectedKey: string, onSelectKey: (key: string) => void }) => {
+export const CamelotWheel = ({ selectedKey, onSelectKey = (key: string) => { } }: { selectedKey: string, onSelectKey?: (key: string) => void }) => {
   return (<div className="key-wheel">
     {majorKeySignatures.map((key: KeySignature, index: number) => (
       <CamelotWheelSegment

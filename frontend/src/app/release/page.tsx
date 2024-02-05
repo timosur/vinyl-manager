@@ -130,9 +130,6 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.name")}>
                 Labels <SortIcon isSorted={sortColumn === "labels.0.name"} direction={sortDirection} />
               </th>
-              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.genre")}>
-                Genre <SortIcon isSorted={sortColumn === "labels.0.genre"} direction={sortDirection} />
-              </th>
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.styles")}>
                 Styles <SortIcon isSorted={sortColumn === "labels.0.styles"} direction={sortDirection} />
               </th>
@@ -159,22 +156,25 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                   ))}
                 </td>
                 <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
-                  {release.tracks.map(track => (
-                    <div key={track.id} className="flex justify-between items-center">
-                      <span>{track.name} ({track.side})</span>
-                      <div className="flex items-center">
-                        <StarRating viewOnly={true} initialRating={track.rating || 0} />
+                  <div className="flex flex-wrap -mx-2">
+                    {release.tracks.map(track => (
+                      <div key={track.id} className="w-1/2 px-2 mb-4">
+                        <div key={track.id} className="bg-gray-600 shadow-md rounded-lg p-4">
+                          <div className="font-semibold text-lg text-white">{track.name}</div>
+                          <div className="text-sm text-white">{track.side} • {track.genre}</div>
+                          <div className="text-sm text-white">Key: {track.key} • BPM: {track.bpm}</div>
+                          <div className="flex items-center mt-2">
+                            <StarRating viewOnly={true} initialRating={track.rating || 0} />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </td>
                 <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   {release.labels.map(label => (
                     <div key={label.id}>{label.name}</div>
                   ))}
-                </td>
-                <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
-                  <span>{release.genre}</span>
                 </td>
                 <td className="px-4 py-3 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   <span>{release.styles}</span>

@@ -24,7 +24,7 @@ class Track(Base):
   audio: Mapped[str] = Column(String)
 
   release_id: Mapped[UUID] = Column(UUID, ForeignKey("release.id"))
-  release: Mapped["Release"] = relationship("Release", back_populates="tracks")
+  release: Mapped["Release"] = relationship("Release", back_populates="tracks", order_by="Release.id_number")
 
   created_at: Mapped[DateTime] = Column(
     DateTime(timezone=True), server_default=func.now()

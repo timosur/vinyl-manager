@@ -30,6 +30,7 @@ export interface Track {
   length: number;
   id: string;
   side: string;
+  release?: Release;
   release_id: string;
 }
 

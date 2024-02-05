@@ -80,6 +80,28 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
     location.href = `/release`;
   };
 
+  // Button to the right
+  const actionButtons = () => (
+    <div className="flex justify-end mb-4">
+      {/* Checkbox if tracks should be analyzed on safe or not */}
+      <label className="flex items-center mr-2">
+        <input
+          type="checkbox"
+          checked={analysis}
+          onChange={(e) => setAnalysis(e.target.checked)}
+          className="mr-2"
+        />
+        Analyze Tracks
+      </label>
+      {/* Save button */}
+      <button onClick={handleSave} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Save</button>
+      {/* Print button */}
+      <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
+        Print Details
+      </button>
+    </div>
+  )
+
   if (!release || !release.id) return <div>Loading...</div>;
 
   return (
@@ -97,39 +119,25 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
       </div>
       {/* Button on the left to go back in history to the list */}
       <div className="flex justify-start mb-4">
-        <button onClick={() => window.location.href = '/release'} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Back</button>
+        <button onClick={() => window.history.back()} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Back</button>
       </div>
-      {/* Buttons to the right */}
-      <div className="flex justify-end mb-4">
-        {/* Checkbox if tracks should be analyzed on safe or not */}
-        <label className="flex items-center mr-2">
-          <input
-            type="checkbox"
-            checked={analysis}
-            onChange={(e) => setAnalysis(e.target.checked)}
-            className="mr-2"
-          />
-          Analyze Tracks
-        </label>
-        {/* Save button */}
-        <button onClick={handleSave} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Save</button>
-        {/* Print button */}
-        <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
-          Print Details
-        </button>
-      </div>
+      
+      {actionButtons()}
+
       <h1 className="text-2xl mb-2">Edit Release</h1>
       {/* Release thumbnail image, display as Image and be able to edit the url */}
-      <div className="flex justify-center mb-4">
-        {release.thumb ? (<Image src={release.thumb} width={200} height={200} alt={release.name} />) : (<div className="w-20 h-20 bg-gray-600"></div>)}
+      {release.thumb ? (<Image src={release.thumb} width={200} height={200} alt={release.name} />) : (<div className="w-20 h-20 bg-gray-600"></div>)}
+
+      <label className="block">
+        Thumbnail URL:
         <input
           type="text"
           value={release.thumb}
           onChange={(e) => handleChange(e.target.value, 'thumb')}
-          className="w-full p-2 ml-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none h-12 justify-end align-bottom"
-          placeholder="Release Thumbnail"
+          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+          placeholder="Thumbnail URL"
         />
-      </div>
+      </label>
       <label className="block">
         ID Number:
         <input
@@ -163,7 +171,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
       </label>
       {/* Release notes */}
       <label className="block">
-        Notes:
+        Comments:
         <textarea
           value={release.notes}
           onChange={(e) => handleChange(e.target.value, 'notes')}
@@ -171,6 +179,132 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           placeholder="Notes"
         />
       </label>
+      <div>
+        <h2 className="text-xl mb-2">Tracks</h2>
+        <div className="flex flex-wrap -mx-2">
+          {release.tracks?.map((track, index) => (
+            <div key={index} className="w-full md:w-1/2 px-2 mb-4">
+              <div className="card bg-gray-800 border border-gray-600 rounded p-4">
+                {/* Track Name */}
+                <label className="block mb-2">
+                  Name:
+                  <input
+                    type="text"
+                    value={track.name}
+                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'name')}
+                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Track Name"
+                  />
+                </label>
+
+                {/* Genre */}
+                <label className="block mb-2">
+                  Genre:
+                  <input
+                    type="text"
+                    value={track.genre}
+                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'genre')}
+                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Track Genre"
+                  />
+                </label>
+
+                {/* Track Side */}
+                <label className="block mb-2">
+                  Side:
+                  <input
+                    type="text"
+                    value={track.side}
+                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'side')}
+                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Track Side"
+                  />
+                </label>
+
+                {/* Track Duration */}
+                <label className="block mb-2">
+                  Duration:
+                  <input
+                    type="text"
+                    value={formatSecondsToMinutes(track.length)}
+                    onChange={(e) => handleItemChange('track', track.id, formatMinutesToSeconds(e.target.value), 'length')}
+                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="Track Length"
+                    readOnly
+                  />
+                </label>
+
+                {/* Audio Section */}
+                <label className="block mb-2">
+                  Audio:
+                  <AudioRecorder onRecordingComplete={(blob: Blob) => handleItemChange('track', track.id, blob, 'audio')} />
+                  {track.audio && (
+                    <>
+                      <AudioVisualizer
+                        blob={track.audio}
+                        width={300}
+                        height={75}
+                        barWidth={1}
+                        gap={0}
+                        barColor={'lightblue'}
+                      />
+                      <AudioPlayer blob={track.audio as Blob} />
+                    </>
+                  )}
+                </label>
+
+                {/* Star Rating */}
+                <label className="block mb-2">
+                  Rating:
+                  <StarRating
+                    viewOnly={false}
+                    initialRating={track.rating || 0}
+                    onRating={(newRating: number) => handleItemChange('track', track.id, newRating, 'rating')}
+                  />
+                </label>
+
+                {/* Key Wheel Selector */}
+                <label className="block mb-2">
+                  Key:
+                  <CamelotWheel
+                    selectedKey={track.key}
+                  />
+                </label>
+
+                {/* BPM */}
+                <label className="block mb-2">
+                  BPM:
+                  <input
+                    type="number"
+                    value={track.bpm}
+                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+                    placeholder="BPM"
+                    readOnly
+                  />
+                </label>
+
+                {/* Remove Button */}
+                <div>
+                  <button onClick={() => handleItemRemove('track', track.id)} className="text-red-500 hover:text-red-700">
+                    <TrashIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Add new track */}
+        <div className="flex">
+          <input
+            type="text"
+            value={newTrackName}
+            onChange={(e) => setNewTrackName(e.target.value)}
+            className="w-full p-2 mb-2 mr-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
+            placeholder="Enter new Track Name"
+          />
+          <button onClick={(e) => handleItemAdd('track', newTrackName)} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Add Track</button>
+        </div>
+      </div>
       {/* Release genres */}
       <label className="block">
         Genres:
@@ -179,16 +313,6 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           onChange={(e) => handleChange(e.target.value, 'genre')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Genres"
-        />
-      </label>
-      {/* Release styles */}
-      <label className="block">
-        Styles:
-        <textarea
-          value={release.styles}
-          onChange={(e) => handleChange(e.target.value, 'styles')}
-          className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="Styles"
         />
       </label>
       {/* Release year */}
@@ -235,7 +359,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={newArtistName}
           onChange={(e) => setNewArtistName(e.target.value)}
           className="w-full p-2 mb-2 mr-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="New Artist Name"
+          placeholder="Enter new Artist Name"
         />
         <button onClick={(e) => handleItemAdd('artist', newArtistName)} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Add Artist</button>
       </div>
@@ -272,156 +396,13 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
           value={newLabelName}
           onChange={(e) => setNewLabelName(e.target.value)}
           className="w-full p-2 mb-2 mr-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-          placeholder="New Label Name"
+          placeholder="Enter new Label Name"
         />
         <button onClick={(e) => handleItemAdd('label', newLabelName)} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Add Label</button>
       </div>
-      <div>
-        <h2 className="text-xl mb-2">Tracks</h2>
-        <div className="flex flex-wrap -mx-2">
-          {release.tracks?.map((track, index) => (
-            <div key={index} className="w-full md:w-1/2 px-2 mb-4">
-              <div className="card bg-gray-800 border border-gray-600 rounded p-4">
-                {/* Track Name */}
-                <label className="block mb-2">
-                  Name:
-                  <input
-                    type="text"
-                    value={track.name}
-                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'name')}
-                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-                    placeholder="Track Name"
-                  />
-                </label>
+      
+      {actionButtons()}
 
-                {/* Genre */}
-                <label className="block mb-2">
-                  Genre:
-                  <input
-                    type="text"
-                    value={track.genre}
-                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'genre')}
-                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-                    placeholder="Track Genre"
-                  />
-                </label>
-
-                {/* Track Side */}
-                <label className="block mb-2">
-                  Side:
-                  <input
-                    type="text"
-                    value={track.side}
-                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'side')}
-                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-                    placeholder="Track Side"
-                  />
-                </label>
-
-                {/* Key Wheel Selector */}
-                <label className="block mb-2">
-                  Key:
-                  <CamelotWheel
-                    selectedKey={track.key}
-                    onSelectKey={(newKey: string) => handleItemChange('track', track.id, newKey, 'key')}
-                  />
-                </label>
-
-                {/* Audio Section */}
-                <label className="block mb-2">
-                  Audio:
-                  <AudioRecorder onRecordingComplete={(blob: Blob) => handleItemChange('track', track.id, blob, 'audio')} />
-                  {track.audio && (
-                    <>
-                      <AudioVisualizer
-                        blob={track.audio}
-                        width={300}
-                        height={75}
-                        barWidth={1}
-                        gap={0}
-                        barColor={'lightblue'}
-                      />
-                      <AudioPlayer blob={track.audio as Blob} />
-                    </>
-                  )}
-                </label>
-
-                {/* Track Length */}
-                <label className="block mb-2">
-                  Length:
-                  <input
-                    type="text"
-                    value={formatSecondsToMinutes(track.length)}
-                    onChange={(e) => handleItemChange('track', track.id, formatMinutesToSeconds(e.target.value), 'length')}
-                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-                    placeholder="Track Length"
-                    readOnly
-                  />
-                </label>
-
-                {/* BPM */}
-                <label className="block mb-2">
-                  BPM:
-                  <input
-                    type="number"
-                    value={track.bpm}
-                    onChange={(e) => handleItemChange('track', track.id, e.target.value, 'bpm')}
-                    className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-                    placeholder="BPM"
-                  />
-                </label>
-
-                {/* Star Rating */}
-                <label className="block mb-2">
-                  Rating:
-                  <StarRating
-                    viewOnly={false}
-                    initialRating={track.rating || 0}
-                    onRating={(newRating: number) => handleItemChange('track', track.id, newRating, 'rating')}
-                  />
-                </label>
-
-                {/* Remove Button */}
-                <div>
-                  <button onClick={() => handleItemRemove('track', track.id)} className="text-red-500 hover:text-red-700">
-                    <TrashIcon className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Add new track */}
-        <div className="flex">
-          <input
-            type="text"
-            value={newTrackName}
-            onChange={(e) => setNewTrackName(e.target.value)}
-            className="w-full p-2 mb-2 mr-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
-            placeholder="New Track Name"
-          />
-          <button onClick={(e) => handleItemAdd('track', newTrackName)} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Add Track</button>
-        </div>
-      </div>
-      {/* Buttons to the right */}
-      <div className="flex justify-end mt-4">
-        {/* Checkbox if tracks should be analyzed on safe or not */}
-        <label className="flex items-center mr-2">
-          <input
-            type="checkbox"
-            checked={analysis}
-            onChange={(e) => setAnalysis(e.target.checked)}
-            className="mr-2"
-          />
-          Analyze Tracks
-        </label>
-        {/* Save button */}
-        <button onClick={handleSave} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Save</button>
-        {/* Print button */}
-        <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
-          Print Details
-        </button>
-      </div>
       <div className="printable">
         <PrintReleaseDetails release={release} />
       </div>
