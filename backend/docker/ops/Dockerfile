@@ -31,4 +31,6 @@ COPY --from=base /app /app
 COPY --from=base /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=base /usr/local/bin /usr/local/bin
 
+RUN chmod a+x /app/startup.sh
+
 CMD ["./startup.sh"]

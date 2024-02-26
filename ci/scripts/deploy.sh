@@ -75,13 +75,15 @@ if [[ $TARGET == *"deploy"* ]]; then
 
   # Create pull secret for private images, using the GitHub token
   # Check if the secret already exists in namespace vinyl-manager
-  if ! kubectl get secret ghcr -n vinyl-manager >/dev/null 2>&1; then
-    kubectl create secret docker-registry ghcr \
-      --docker-server=ghcr.io \
-      --docker-username=timosur \
-      --docker-password=$GITHUB_TOKEN \
-      --namespace vinyl-manager
+  # If not, create it
+  if kubectl get secret ghcr -n vinyl-manager >/dev/null 2>&1; then
+    kubectl delete secret ghcr -n vinyl-manager
   fi
+  kubectl create secret docker-registry ghcr \
+    --docker-server=ghcr.io \
+    --docker-username=timosur \
+    --docker-password=$GITHUB_TOKEN \
+    --namespace vinyl-manager
 
   # Update the deployment
   helm upgrade vinyl-manager oci://ghcr.io/timosur/vinyl-manager \
