@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { PrintReleaseDetails } from "@/components/release/PrintReleaseDetails";
 import Image from "next/image";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { CopyReleaseDetails } from "@/components/release/CopyReleaseDeatils";
 
 interface SearchableTableProps {
   releases: Release[];
@@ -181,6 +182,8 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
                 </td>
                 {/* Edit button, onclick go to edit page */}
                 <td className="px-4 py-3">
+                  <CopyReleaseDetails release={release} />
+
                   <a onClick={(e) => deleteRelease(e, release.id)} className="text-red-500 hover:text-red-700 cursor-pointer">
                     <TrashIcon className="h-5 w-5" />
                   </a>
