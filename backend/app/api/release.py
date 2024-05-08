@@ -21,13 +21,17 @@ router = APIRouter()
 
 
 @router.get("/release")
-async def list_releases(session: AsyncSession = Depends(get_async_session)):
+async def list_releases(session: AsyncSession = Depends(get_async_session), pageLimit: int = 20, page: int = 1, sortColumn: str = "id_number", sortOrder: str = "asc", searchTerm: str = ""):
   # Prepare the select statement
-  stmt = select(Release).options(
-    joinedload(Release.release_artists).joinedload(ArtistReleaseAssociation.artist),
-    joinedload(Release.release_labels).joinedload(LabelReleaseAssociation.label),
-    selectinload(Release.tracks),
-  ).order_by(Release.id_number.asc())
+  stmt = (
+    select(Release)
+    .options(
+      joinedload(Release.release_artists).joinedload(ArtistReleaseAssociation.artist),
+      joinedload(Release.release_labels).joinedload(LabelReleaseAssociation.label),
+      selectinload(Release.tracks).load_only(Track.id, Track.name, Track.genre, Track.bpm, Track.key, Track.rating, Track.side),
+    )
+    .order_by(Release.id_number.asc())
+  )
 
   # Execute the query asynchronously
   result = await session.execute(stmt)
@@ -44,7 +48,39 @@ async def list_releases(session: AsyncSession = Depends(get_async_session)):
     del release.release_labels
     del release.release_artists
 
-  return releases
+  # Sort releases
+  if sortColumn == "id_number":
+    releases = sorted(releases, key=lambda x: x.id_number if x.id_number else "999999", reverse=True if sortOrder == "desc" else False)
+  elif sortColumn == "name":
+    releases = sorted(releases, key=lambda x: x.name, reverse=True if sortOrder == "desc" else False)
+  elif sortColumn == "artists":
+    releases = sorted(releases, key=lambda x: ", ".join([artist.name for artist in x.artists]), reverse=True if sortOrder == "desc" else False)
+  elif sortColumn == "labels":
+    releases = sorted(releases, key=lambda x: ", ".join([label.name for label in x.labels]), reverse=True if sortOrder == "desc" else False)
+  elif sortColumn == "styles":
+    releases = sorted(releases, key=lambda x: x.styles if x.styles else "", reverse=True if sortOrder == "desc" else False)
+  elif sortColumn == "tracks":
+    releases = sorted(releases, key=lambda x: len(x.tracks), reverse=True if sortOrder == "desc" else False)
+  elif sortColumn == "created_at":
+    releases = sorted(releases, key=lambda x: x.created_at, reverse=True if sortOrder == "desc" else False)
+
+  # Search releases, search in name, tracks, labels, artists, genre and styles, check if the search field is not empty or none
+  if searchTerm and searchTerm != "":
+    releases = [release for release in releases if searchTerm.lower() in release.name.lower() or
+                any([searchTerm.lower() in track.name.lower() for track in release.tracks]) or
+                any([searchTerm.lower() in artist.name.lower() for artist in release.artists]) or
+                any([searchTerm.lower() in label.name.lower() for label in release.labels]) or
+                any([searchTerm.lower() in track.genre.lower() if track.genre else False for track in release.tracks]) or
+                any([searchTerm.lower() in release.styles.lower() if release.styles else False])]
+    
+  # Calculate pagination
+  total = len(releases)
+  start = (page - 1) * pageLimit
+  end = start + pageLimit if start + pageLimit < total else total
+  releases = releases[start:end]
+  pageCount = total / pageLimit if total % pageLimit == 0 else total // pageLimit + 1
+
+  return {"total": total, "page": page, "maxPage": pageCount, "items": releases, "start": start + 1, "end": end}
 
 
 @router.get("/release/{id}")
@@ -68,12 +104,7 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
 
   # Get latest id_number + 1 (e.g. 000002) number is a string, int needs to be extracted first by removing leading zeros
   if release.id_number is None or release.id_number == "":
-    stmt = (
-      select(Release)
-      .where(Release.id_number != None)
-      .order_by(Release.id_number.desc())
-      .limit(1)
-    )
+    stmt = select(Release).where(Release.id_number != None).order_by(Release.id_number.desc()).limit(1)
     result = await session.execute(stmt)
     latest_release = result.scalars().first()
     if latest_release:
@@ -88,6 +119,7 @@ async def get_release(id: str, session: AsyncSession = Depends(get_async_session
   del release.release_artists
 
   return release
+
 
 # update all release styles, combining track styles
 @router.put("/release/styles")
@@ -118,6 +150,7 @@ async def update_release_styles(session: AsyncSession = Depends(get_async_sessio
 
   return {"status": "OK"}
 
+
 # delete a release
 @router.delete("/release/{id}")
 async def delete_release(id: str, session: AsyncSession = Depends(get_async_session)):
@@ -139,18 +172,14 @@ async def delete_release(id: str, session: AsyncSession = Depends(get_async_sess
       await session.delete(track)
 
     # Delete all artists for this release
-    stmt = select(ArtistReleaseAssociation).where(
-      ArtistReleaseAssociation.release_id == id
-    )
+    stmt = select(ArtistReleaseAssociation).where(ArtistReleaseAssociation.release_id == id)
     result = await session.execute(stmt)
     artist_assocs = result.scalars().all()
     for artist_assoc in artist_assocs:
       await session.delete(artist_assoc)
 
     # Delete all labels for this release
-    stmt = select(LabelReleaseAssociation).where(
-      LabelReleaseAssociation.release_id == id
-    )
+    stmt = select(LabelReleaseAssociation).where(LabelReleaseAssociation.release_id == id)
     result = await session.execute(stmt)
     label_assocs = result.scalars().all()
     for label_assoc in label_assocs:
@@ -268,9 +297,7 @@ async def update_release(
 
 # create a empty release
 @router.post("/release/empty")
-async def create_empty_release(
-  name: str, session: AsyncSession = Depends(get_async_session)
-):
+async def create_empty_release(name: str, session: AsyncSession = Depends(get_async_session)):
   # Create new release
   new_release = Release(name=name)
 
@@ -281,9 +308,7 @@ async def create_empty_release(
 
 
 @router.delete("/release/{id}/track/{track_id}")
-async def delete_track(
-  id: str, track_id: str, session: AsyncSession = Depends(get_async_session)
-):
+async def delete_track(id: str, track_id: str, session: AsyncSession = Depends(get_async_session)):
   try:
     # Fetch the existing track
     stmt = select(Track).where(Track.id == track_id, Track.release_id == id)
@@ -311,9 +336,7 @@ async def delete_track(
 
 
 @router.delete("/release/{id}/artist/{artist_id}")
-async def delete_artist(
-  id: str, artist_id: str, session: AsyncSession = Depends(get_async_session)
-):
+async def delete_artist(id: str, artist_id: str, session: AsyncSession = Depends(get_async_session)):
   try:
     # Fetch the existing artist
     stmt = select(Artist).where(Artist.id == artist_id, Artist.release_id == id)
@@ -341,9 +364,7 @@ async def delete_artist(
 
 
 @router.delete("/release/{id}/label/{label_id}")
-async def delete_label(
-  id: str, label_id: str, session: AsyncSession = Depends(get_async_session)
-):
+async def delete_label(id: str, label_id: str, session: AsyncSession = Depends(get_async_session)):
   try:
     # Fetch the existing label
     stmt = select(Label).where(Label.id == label_id, Label.release_id == id)
@@ -371,9 +392,7 @@ async def delete_label(
 
 
 @router.post("/release/{id}/track/empty")
-async def add_new_empty_track(
-  id: str, name: str, session: AsyncSession = Depends(get_async_session)
-):
+async def add_new_empty_track(id: str, name: str, session: AsyncSession = Depends(get_async_session)):
   try:
     # Fetch the existing release with simplified relationship loading
     stmt = select(Release).where(Release.id == id)
@@ -405,9 +424,7 @@ async def add_new_empty_track(
 
 
 @router.post("/release/{id}/artist/empty")
-async def add_new_empty_artist(
-  id: str, name: str, session: AsyncSession = Depends(get_async_session)
-):
+async def add_new_empty_artist(id: str, name: str, session: AsyncSession = Depends(get_async_session)):
   try:
     # Fetch the existing release with simplified relationship loading
     stmt = select(Release).where(Release.id == id)
@@ -440,9 +457,7 @@ async def add_new_empty_artist(
 
 
 @router.post("/release/{id}/label/empty")
-async def add_new_empty_label(
-  id: str, name: str, session: AsyncSession = Depends(get_async_session)
-):
+async def add_new_empty_label(id: str, name: str, session: AsyncSession = Depends(get_async_session)):
   try:
     # Fetch the existing release with simplified relationship loading
     stmt = select(Release).where(Release.id == id)
@@ -496,9 +511,7 @@ async def delete_all_releases(session: AsyncSession = Depends(get_async_session)
 
 
 @router.post("/release/import-deejay-de-csv")
-async def import_deejay_de_csv(
-  file: UploadFile, session: AsyncSession = Depends(get_async_session)
-):
+async def import_deejay_de_csv(file: UploadFile, session: AsyncSession = Depends(get_async_session)):
   if not file.filename.endswith(".csv"):
     raise HTTPException(status_code=422, detail="Invalid file format")
 
@@ -513,9 +526,7 @@ async def import_deejay_de_csv(
 
 
 @router.post("/release/sync-discogs")
-async def sync_discogs_collection(
-  session: AsyncSession = Depends(get_async_session), username: str = ""
-):
+async def sync_discogs_collection(session: AsyncSession = Depends(get_async_session), username: str = ""):
   if not username:
     raise HTTPException(status_code=422, detail="Invalid username")
 

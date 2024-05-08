@@ -11,10 +11,17 @@ const convertToBase64 = async (file: Blob): Promise<string> => {
 }
 
 class ReleaseService {
-  public async get(): Promise<any | null> {
+  public async get(pageLimit: number, page: number, sortColumn: string, sortOrder: 'asc' | 'desc', searchTerm: string): Promise<any | null> {
     try {
       const response = await doRequest('/api/v1/release', {
         method: 'GET',
+        params: {
+          pageLimit,
+          page,
+          sortColumn,
+          sortOrder,
+          searchTerm,
+        },
       });
       if (response.status === 200) return response.data;
     } catch (error) {

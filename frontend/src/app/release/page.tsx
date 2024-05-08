@@ -1,72 +1,48 @@
 "use client";
 import { releaseService } from "@/service/release"
 import { Release } from "@/models/Release"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { StarRating } from "@/components/StarRating";
 import { useRouter } from "next/navigation"
 import { PrintReleaseDetails } from "@/components/release/PrintReleaseDetails";
 import Image from "next/image";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { CopyReleaseDetails } from "@/components/release/CopyReleaseDeatils";
-
-interface SearchableTableProps {
-  releases: Release[];
-}
+import { debounce } from "@/helper/debounce";
 
 const SortIcon = ({ isSorted, direction }: { isSorted: boolean; direction: "asc" | "desc" }) => {
   if (!isSorted) return null;
   return direction === "asc" ? "↑" : "↓";
 };
 
-const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
+export default function ReleasesPage() {
   const router = useRouter()
+  const [releaseOverview, setReleaseOverview] = useState<{ items: Release[], start: number, end: number, total: number }>({ items: [], start: 0, end: 0, total: 0 });
+  const [page, setPage] = useState(1);
+  const [pageLimit, setPageLimit] = useState(50);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredReleases, setFilteredReleases] = useState<Release[]>(releases);
   const [releaseName, setReleaseName] = useState("");
 
-  const [sortColumn, setSortColumn] = useState<string | null>("id_number");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortColumn, setSortColumn] = useState<string>("id_number");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  const sortData = (data: Release[], column: string | null, direction: "asc" | "desc") => {
-    if (!column) return data;
-    // split column name by dot
-    const columnParts = column.split(".");
-
-    return [...data].sort((a, b) => {
-      // get value of column
-      let aVal: any = a;
-      let bVal: any = b;
-
-      for (const part of columnParts) {
-        aVal = aVal[part];
-        if (aVal === undefined) return 1;
-        bVal = bVal[part];
-        if (bVal === undefined) return -1;
-      }
-
-      // lower strings
-      if (typeof aVal === "string") aVal = (aVal as string).toLowerCase();
-      if (typeof bVal === "string") bVal = (bVal as string).toLowerCase();
-
-      // sort by value, if value empty, sort to bottom
-      if (aVal === null) return 1;
-      if (bVal === null) return -1;
-      if (aVal < bVal) return direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return direction === "asc" ? 1 : -1;
-
-      return 0;
-    });
-  };
+  const fetchReleaseOverview = useCallback(async () => {
+    const releaseOverview = await releaseService.get(pageLimit, page, sortColumn, sortOrder, searchTerm);
+    setReleaseOverview(releaseOverview);
+  }, [page, pageLimit, sortColumn, sortOrder, searchTerm]);
 
   const handleSort = (column: string) => {
-    const isAsc = sortColumn === column && sortDirection === "asc";
-    setSortDirection(isAsc ? "desc" : "asc");
+    const isAsc = sortColumn === column && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
     setSortColumn(column);
   };
 
+  const handleNewSearchTermDelayed = debounce((searchTerm: string) => {
+    setSearchTerm(searchTerm);
+  }, 500);
+
   const createRelease = async () => {
     const release = await releaseService.create(releaseName);
-
     location.href = `/release/${release.id}`;
   }
 
@@ -74,23 +50,49 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
     e.preventDefault();
 
     await releaseService.delete(id);
-    const releases = await releaseService.get();
-    setFilteredReleases(releases);
+    await fetchReleaseOverview();
   };
 
   useEffect(() => {
-    let filtered = releases?.filter(release =>
-      release.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      release.tracks.some(track => track.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      release.labels.some(label => label.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      release.artists.some(artist => artist.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      release.genre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      release.styles?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    fetchReleaseOverview();
+  }, [searchTerm, sortColumn, sortOrder, page, pageLimit]);
 
-    filtered = sortData(filtered || [], sortColumn, sortDirection);
-    setFilteredReleases(filtered);
-  }, [searchTerm, releases, sortColumn, sortDirection]);
+  useEffect(() => {
+    // Listen to keydown events for keyboard shortcuts, for pagination to next and prev page
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        if (releaseOverview.end !== releaseOverview.total) {
+          setPage(page + 1);
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (page !== 1) {
+          setPage(page - 1);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [page, releaseOverview]);
+    
+  const PaginationBar = () => (
+    <div className="text-sm text-gray-400 uppercase bg-gray-700 p-2 flex justify-end">
+      <div>
+        {/* Pagination */}
+        {releaseOverview.start} - {releaseOverview.end} of {releaseOverview.total} releases
+        {/* Buttons for getting to next and prev page */}
+        <button onClick={() => setPage(page - 1)} disabled={page === 1} className={"p-2 mx-2 " + (page === 1 ? "bg-gray-700" : "bg-gray-800 hover:bg-gray-700")}>&lt;</button>
+        <button onClick={() => setPage(page + 1)} disabled={releaseOverview.end === releaseOverview.total} className={"p-2 " + (releaseOverview.end === releaseOverview.total ? "bg-gray-700" : "bg-gray-800 hover:bg-gray-700")}>&gt;</button>
+        {/* Input for selecting pageLimit from options 10, 20, 30, 50, 100 */}
+        <select value={pageLimit} onChange={(e) => { setPage(1); setPageLimit(parseInt(e.target.value)) }} className="p-2 mx-2 bg-gray-800">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6">
@@ -109,36 +111,38 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
         type="text"
         placeholder="Search..."
         className="w-full p-3 mb-4 bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors"
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={(e) => handleNewSearchTermDelayed(e.target.value)}
       />
+
       <div className="overflow-x-auto shadow">
+        <PaginationBar />
         <table className="w-full text-left table-auto border-collapse bg-gray-800">
           <thead className="text-sm text-gray-400 uppercase bg-gray-700">
             <tr>
               <th className="px-3 py-1 cursor-pointer" onClick={() => handleSort("id_number")}>
-                ID Number <SortIcon isSorted={sortColumn === "id_number"} direction={sortDirection} />
+                ID Number <SortIcon isSorted={sortColumn === "id_number"} direction={sortOrder} />
               </th>
               <th className="px-4 py-3"></th>
               <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("name")}>
-                Name <SortIcon isSorted={sortColumn === "name"} direction={sortDirection} />
+                Name <SortIcon isSorted={sortColumn === "name"} direction={sortOrder} />
               </th>
-              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("artists.0.name")}>
-                Artists <SortIcon isSorted={sortColumn === "artists.0.name"} direction={sortDirection} />
+              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("artists")}>
+                Artists <SortIcon isSorted={sortColumn === "artists"} direction={sortOrder} />
               </th>
-              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("tracks.0.name")}>
-                Tracks <SortIcon isSorted={sortColumn === "tracks.0.name"} direction={sortDirection} />
+              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("tracks")}>
+                Tracks <SortIcon isSorted={sortColumn === "tracks"} direction={sortOrder} />
               </th>
-              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.name")}>
-                Labels <SortIcon isSorted={sortColumn === "labels.0.name"} direction={sortDirection} />
+              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels")}>
+                Labels <SortIcon isSorted={sortColumn === "labels"} direction={sortOrder} />
               </th>
-              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("labels.0.styles")}>
-                Styles <SortIcon isSorted={sortColumn === "labels.0.styles"} direction={sortDirection} />
+              <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("styles")}>
+                Styles <SortIcon isSorted={sortColumn === "styles"} direction={sortOrder} />
               </th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-600">
-            {filteredReleases.map(release => (
+            {releaseOverview?.items?.map(release => (
               <tr key={release.id} className="hover:bg-gray-700 transition-colors">
                 <td className="px-3 py-1 cursor-pointer" onClick={() => router.push(`/release/${release.id}`)}>
                   <span>{release.id_number}</span>
@@ -192,32 +196,13 @@ const SearchableTable: React.FC<SearchableTableProps> = ({ releases }) => {
             ))}
           </tbody>
         </table>
-        {/* Count of releases */}
-        <div className="text-sm text-gray-400 uppercase bg-gray-700 p-2">
-          {filteredReleases.length} Releases
-        </div>
+        <PaginationBar />
       </div>
       <div className="printable flex">
-        {filteredReleases.map((release, index) => (
+        {releaseOverview?.items?.map((release, index) => (
           <PrintReleaseDetails key={index} release={release} />
         ))}
       </div>
     </div>
   );
 };
-
-export default function Release() {
-  const [releases, setReleases] = useState<Release[]>([]);
-
-  useEffect(() => {
-    async function fetchReleases() {
-      const releases = await releaseService.get();
-      setReleases(releases);
-    }
-    fetchReleases();
-  }, []);
-
-  return (
-    <SearchableTable releases={releases} />
-  )
-}

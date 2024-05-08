@@ -14,8 +14,7 @@ services:
     environment:
       - 'TZ=Europe/Berlin'
     networks:
-      - default
-      - internal
+      - vinyl-main
 
   vinyl-backend:
     container_name: vinyl-backend
@@ -36,13 +35,13 @@ services:
       - 'traefik.enable=true'
       - 'traefik.frontend.rule=Host:vinyl.docker.local;PathPrefix:/api'
       - 'traefik.port=8000'
-      - 'traefik.docker.network=internal'
+      - 'traefik.docker.network=vinyl-main'
     volumes:
        - ../backend:/app:delegated
     dns:
       - 8.8.8.8
     networks:
-      - internal
+      - vinyl-main
 
   vinyl-audio-analyzer:
     container_name: vinyl-audio-analyzer
@@ -52,7 +51,7 @@ services:
     ports:
       - 8001:5000
     networks:
-      - internal
+      - vinyl-main
 
   vinyl-frontend:
     container_name: vinyl-frontend
@@ -73,7 +72,7 @@ services:
       - 'traefik.enable=true'
       - 'traefik.frontend.rule=Host:vinyl.docker.local'
       - 'traefik.port=3000'
-      - 'traefik.docker.network=internal'
+      - 'traefik.docker.network=vinyl-main'
     volumes:
       - ../frontend/package.json:/usr/src/app/package.json:cached
       - ../frontend/package-lock.json:/usr/src/app/package-lock.json:cached
@@ -83,7 +82,7 @@ services:
       - ../frontend/styles:/usr/src/app/styles:cached
     working_dir: /usr/src/app
     networks:
-      - internal
+      - vinyl-main
 
   vinyl-postgres:
     image: postgres:latest
@@ -97,9 +96,8 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     networks:
-      - internal
+      - vinyl-main
 
 networks:
-  internal:
-  default:
+  vinyl-main:
     driver: bridge
