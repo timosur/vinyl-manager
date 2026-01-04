@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  OWNER: ${{ github.repository_owner }}
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -22,15 +22,18 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: backend
+          - service: backend
             dockerfile: ./backend/docker/ops/Dockerfile
             context: ./backend
-          - name: frontend
+            image_name: backend
+          - service: frontend
             dockerfile: ./frontend/docker/ops/Dockerfile
             context: ./frontend
-          - name: audio-analyzer
+            image_name: frontend
+          - service: audio-analyzer
             dockerfile: ./audio-analyzer/docker/ops/Dockerfile
             context: ./audio-analyzer
+            image_name: audio-analyzer
 
     steps:
       - name: Checkout repository
@@ -50,25 +53,22 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/vinyl-manager-${{ matrix.service.name }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.image_name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.service.context }}
-          file: ${{ matrix.service.dockerfile }}
-          platforms: linux/amd64,linux/arm64
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            APP_ENVIRONMENT=production
+          platforms: linux/amd64,linux/arm64
+
+      - name: Output image digest
+        run: echo ${{ steps.build.outputs.digest }}
