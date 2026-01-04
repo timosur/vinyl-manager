@@ -21,7 +21,8 @@ jobs:
 
     strategy:
       matrix:
-        service:
+        service: [backend, frontend, audio-analyzer]
+        include:
           - service: backend
             dockerfile: ./backend/docker/ops/Dockerfile
             context: ./backend
