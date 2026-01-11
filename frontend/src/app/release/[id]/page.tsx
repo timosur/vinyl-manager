@@ -121,7 +121,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
       <div className="flex justify-start mb-4">
         <button onClick={() => window.history.back()} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Back</button>
       </div>
-      
+
       {actionButtons()}
 
       <h1 className="text-2xl mb-2">Edit Release</h1>
@@ -132,7 +132,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         Thumbnail URL:
         <input
           type="text"
-          value={release.thumb}
+          value={release.thumb || ''}
           onChange={(e) => handleChange(e.target.value, 'thumb')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Thumbnail URL"
@@ -142,7 +142,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         ID Number:
         <input
           type="text"
-          value={release.id_number}
+          value={release.id_number || ''}
           onChange={(e) => handleChange(e.target.value.replace("0", "").padStart(6, "0"), 'id_number')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="ID Number"
@@ -152,7 +152,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         Name:
         <input
           type="text"
-          value={release.name}
+          value={release.name || ''}
           onChange={(e) => handleChange(e.target.value, 'name')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Name"
@@ -163,7 +163,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         Short Name:
         <input
           type="text"
-          value={release.short}
+          value={release.short || ''}
           onChange={(e) => handleChange(e.target.value, 'short')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Short Name"
@@ -173,7 +173,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
       <label className="block">
         Comments:
         <textarea
-          value={release.notes}
+          value={release.notes || ''}
           onChange={(e) => handleChange(e.target.value, 'notes')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Notes"
@@ -190,7 +190,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                   Name:
                   <input
                     type="text"
-                    value={track.name}
+                    value={track.name || ''}
                     onChange={(e) => handleItemChange('track', track.id, e.target.value, 'name')}
                     className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
                     placeholder="Track Name"
@@ -202,7 +202,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                   Genre:
                   <input
                     type="text"
-                    value={track.genre}
+                    value={track.genre || ''}
                     onChange={(e) => handleItemChange('track', track.id, e.target.value, 'genre')}
                     className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
                     placeholder="Track Genre"
@@ -214,7 +214,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                   Side:
                   <input
                     type="text"
-                    value={track.side}
+                    value={track.side || ''}
                     onChange={(e) => handleItemChange('track', track.id, e.target.value, 'side')}
                     className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
                     placeholder="Track Side"
@@ -276,7 +276,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                   BPM:
                   <input
                     type="number"
-                    value={track.bpm}
+                    value={track.bpm || 0}
                     className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
                     placeholder="BPM"
                     readOnly
@@ -309,7 +309,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
       <label className="block">
         Genres:
         <textarea
-          value={release.genre}
+          value={release.genre || ''}
           onChange={(e) => handleChange(e.target.value, 'genre')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Genres"
@@ -320,7 +320,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         Year:
         <input
           type="number"
-          value={release.year}
+          value={release.year || ''}
           onChange={(e) => handleChange(e.target.value, 'year')}
           className="w-full p-2 mb-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
           placeholder="Year"
@@ -336,7 +336,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                 Name:
                 <input
                   type="text"
-                  value={artist.name}
+                  value={artist.name || ''}
                   onChange={(e) => handleItemChange('artist', artist.id, e.target.value, 'name')}
                   className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
                   placeholder="Artist Name"
@@ -373,7 +373,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
                 Name:
                 <input
                   type="text"
-                  value={label.name}
+                  value={label.name || ''}
                   onChange={(e) => handleItemChange('label', label.id, e.target.value, 'name')}
                   className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none"
                   placeholder="Label Name"
@@ -400,7 +400,7 @@ const EditRelease = ({ params }: { params: { id: string } }) => {
         />
         <button onClick={(e) => handleItemAdd('label', newLabelName)} className="p-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300 ease-in-out">Add Label</button>
       </div>
-      
+
       {actionButtons()}
 
       <div className="printable">
