@@ -66,13 +66,17 @@ async def list_releases(session: AsyncSession = Depends(get_async_session), page
 
   # Search releases, search in name, tracks, labels, artists, genre and styles, check if the search field is not empty or none
   if searchTerm and searchTerm != "":
-    releases = [release for release in releases if searchTerm.lower() in release.name.lower() or
-                any([searchTerm.lower() in track.name.lower() for track in release.tracks]) or
-                any([searchTerm.lower() in artist.name.lower() for artist in release.artists]) or
-                any([searchTerm.lower() in label.name.lower() for label in release.labels]) or
-                any([searchTerm.lower() in track.genre.lower() if track.genre else False for track in release.tracks]) or
-                any([searchTerm.lower() in release.styles.lower() if release.styles else False])]
-    
+    releases = [
+      release
+      for release in releases
+      if searchTerm.lower() in release.name.lower()
+      or any([searchTerm.lower() in track.name.lower() for track in release.tracks])
+      or any([searchTerm.lower() in artist.name.lower() for artist in release.artists])
+      or any([searchTerm.lower() in label.name.lower() for label in release.labels])
+      or any([searchTerm.lower() in track.genre.lower() if track.genre else False for track in release.tracks])
+      or any([searchTerm.lower() in release.styles.lower() if release.styles else False])
+    ]
+
   # Calculate pagination
   total = len(releases)
   start = (page - 1) * pageLimit
@@ -81,6 +85,40 @@ async def list_releases(session: AsyncSession = Depends(get_async_session), page
   pageCount = total / pageLimit if total % pageLimit == 0 else total // pageLimit + 1
 
   return {"total": total, "page": page, "maxPage": pageCount, "items": releases, "start": start + 1, "end": end}
+
+
+@router.get("/release/export-csv")
+async def export_releases_csv(session: AsyncSession = Depends(get_async_session)):
+  """Export all releases to CSV format"""
+  from app.service.release.csv_export import export_releases_to_csv
+
+  try:
+    csv_content = await export_releases_to_csv(session)
+
+    from fastapi.responses import Response
+
+    return Response(content=csv_content, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=releases_export.csv"})
+
+  except Exception as e:
+    logger.exception(e)
+    raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/release/import-csv")
+async def import_releases_csv(file: UploadFile, session: AsyncSession = Depends(get_async_session)):
+  """Import releases from CSV format"""
+  from app.service.release.csv_export import import_releases_from_csv
+
+  if not file.filename.endswith(".csv"):
+    raise HTTPException(status_code=422, detail="Invalid file format")
+
+  try:
+    result = await import_releases_from_csv(session, file)
+    return result
+
+  except Exception as e:
+    logger.exception(e)
+    raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/release/{id}")

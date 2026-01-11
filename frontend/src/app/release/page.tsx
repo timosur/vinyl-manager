@@ -53,6 +53,53 @@ export default function ReleasesPage() {
     await fetchReleaseOverview();
   };
 
+  const exportCSV = async () => {
+    try {
+      const blob = await releaseService.exportCSV();
+      if (blob) {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'releases_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Failed to export CSV');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export CSV');
+    }
+  }
+
+  const importCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      alert('Please select a CSV file');
+      return;
+    }
+
+    try {
+      const result = await releaseService.importCSV(file);
+      if (result.status === 'SUCCESS') {
+        alert(`Import completed!\nCreated: ${result.created_count}\nUpdated: ${result.updated_count}\nErrors: ${result.error_count}`);
+        await fetchReleaseOverview(); // Refresh the list
+      } else {
+        alert('Import failed');
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      alert('Import failed: ' + (error as Error).message);
+    }
+
+    // Reset the input
+    event.target.value = '';
+  }
+
   useEffect(() => {
     fetchReleaseOverview();
   }, [searchTerm, sortColumn, sortOrder, page, pageLimit]);
@@ -73,7 +120,7 @@ export default function ReleasesPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [page, releaseOverview]);
-    
+
   const PaginationBar = () => (
     <div className="text-sm text-gray-400 uppercase bg-gray-700 p-2 flex justify-end">
       <div>
@@ -97,15 +144,29 @@ export default function ReleasesPage() {
   return (
     <div className="p-6">
       {/* Button on the right */}
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 flex-wrap gap-2">
         {/* New release by name */}
-        <input type="text" placeholder="Release Name" value={releaseName} className="p-2 mr-2 bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors" onChange={(e) => setReleaseName(e.target.value)} />
+        <input type="text" placeholder="Release Name" value={releaseName} className="p-2 bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors" onChange={(e) => setReleaseName(e.target.value)} />
         <button className="p-2 bg-blue-500 rounded hover:bg-blue-600" onClick={createRelease}>
           New Release
         </button>
-        <button onClick={() => window.print()} className="p-2 ml-2 bg-green-500 rounded hover:bg-green-600">
+        <button onClick={() => window.print()} className="p-2 bg-green-500 rounded hover:bg-green-600">
           Print Details
         </button>
+        {/* CSV Export button */}
+        <button onClick={exportCSV} className="p-2 bg-purple-500 rounded hover:bg-purple-600">
+          Export CSV
+        </button>
+        {/* CSV Import button (hidden file input) */}
+        <label className="p-2 bg-orange-500 rounded hover:bg-orange-600 cursor-pointer">
+          Import CSV
+          <input
+            type="file"
+            accept=".csv"
+            onChange={importCSV}
+            className="hidden"
+          />
+        </label>
       </div>
       <input
         type="text"

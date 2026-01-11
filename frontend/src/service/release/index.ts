@@ -161,6 +161,46 @@ class ReleaseService {
     }
     return null;
   }
+
+  public async exportCSV(): Promise<Blob | null> {
+    try {
+      const response = await fetch('/api/v1/release/export-csv', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 200) {
+        return await response.blob();
+      }
+    } catch (error) {
+      console.error('Export CSV error:', error);
+    }
+    return null;
+  }
+
+  public async importCSV(file: File): Promise<any | null> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/v1/release/import-csv', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.status === 200) {
+        return await response.json();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Import failed');
+      }
+    } catch (error) {
+      console.error('Import CSV error:', error);
+      throw error;
+    }
+  }
 }
 
 export const releaseService = new ReleaseService();
