@@ -8,7 +8,7 @@ authors = []
 python = "^3.12"
 fastapi = "^0.98.0"
 uvicorn = "^0.23.2"
-pydantic = "^1.10.12"
+pydantic = "^1.10.16"
 requests = "^2.31.0"
 alembic = "^1.11.3"
 psycopg2-binary = "^2.9.7"
@@ -44,4 +44,3 @@ asyncio_mode = 'auto'
 [tool.ruff]
 indent-width = 2
 line-length = 250
-
