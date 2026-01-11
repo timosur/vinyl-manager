@@ -1,4 +1,4 @@
-FROM python:3.13-bookworm AS base
+FROM python:3.12-bookworm AS base
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN poetry install --no-root
 
 COPY . /app
 
-FROM python:3.13-bookworm
+FROM python:3.12-bookworm
 
 # Install PostgreSQL client
 RUN echo "deb https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
